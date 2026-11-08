@@ -1,0 +1,104 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'app_colors.dart';
+
+class AppTheme {
+  static ThemeData get darkTheme {
+    return ThemeData(
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: AppColors.pitchBlack,
+      primaryColor: AppColors.pitchGreen,
+      canvasColor: AppColors.pitchBlack,
+      colorScheme: const ColorScheme.dark(
+        primary: AppColors.pitchGreen,
+        secondary: AppColors.pitchGreen,
+        surface: AppColors.surface,
+        background: AppColors.pitchBlack,
+        onPrimary: AppColors.pitchBlack,
+        onSurface: AppColors.textPrimary,
+        onBackground: AppColors.textPrimary,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AppColors.pitchBlack,
+        foregroundColor: AppColors.textPrimary,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
+        centerTitle: false,
+        titleTextStyle: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      cardTheme: CardTheme(
+        color: AppColors.cardSurface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(
+            color: AppColors.hairline,
+            width: 1,
+          ),
+        ),
+        margin: EdgeInsets.zero,
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.cardSurface,
+        modalBackgroundColor: AppColors.cardSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        elevation: 16,
+      ),
+      dividerTheme: const DividerThemeData(
+        color: AppColors.hairline,
+        thickness: 1,
+        space: 1,
+      ),
+      textTheme: const TextTheme(
+        headlineLarge: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          height: 1.3,
+        ),
+        headlineMedium: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          height: 1.4,
+        ),
+        titleLarge: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          height: 1.4,
+        ),
+        titleMedium: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          height: 1.4,
+        ),
+        bodyLarge: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 19,
+          fontWeight: FontWeight.w400,
+          height: 1.85, // Generous line height for Arabic tashkeel
+          letterSpacing: 0.2,
+        ),
+        bodyMedium: TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 14,
+          height: 1.5,
+        ),
+        bodySmall: TextStyle(
+          color: AppColors.textTertiary,
+          fontSize: 12,
+          height: 1.4,
+        ),
+      ),
+    );
+  }
+}
