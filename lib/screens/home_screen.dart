@@ -111,6 +111,14 @@ class HomeScreen extends StatelessWidget {
             ),
             actions: [
               IconButton(
+                icon: const Icon(Icons.menu_book_rounded),
+                tooltip: 'تنبيهات عامة',
+                onPressed: () {
+                  HapticFeedback.selectionClick();
+                  GeneralNotesSheet.show(context, book.generalNotes);
+                },
+              ),
+              IconButton(
                 icon: const Icon(Icons.info_outline_rounded),
                 tooltip: 'عن الكتاب',
                 onPressed: () {
@@ -135,13 +143,13 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Hero Header Card
-                _buildHeroCard(context, book.bookTitle, book.author),
-
-                const SizedBox(height: 16),
-
-                // General Notes Floating Card
-                _buildGeneralNotesCard(context, book.generalNotes),
+                // Hero Header Card with Integrated General Notes
+                _buildHeroCard(
+                  context,
+                  book.bookTitle,
+                  book.author,
+                  book.generalNotes,
+                ),
 
                 const SizedBox(height: 24),
 
@@ -156,10 +164,22 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
 
-                // Category Cards
-                ...book.categories.map((cat) {
-                  return _buildCategoryCard(context, cat, provider);
-                }),
+                // Two Category Boxes in 2-Column Grid Form
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (int i = 0; i < book.categories.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildCategoryGridCard(
+                          context,
+                          book.categories[i],
+                          provider,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ],
             ),
           ),
@@ -168,7 +188,12 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeroCard(BuildContext context, String title, String author) {
+  Widget _buildHeroCard(
+    BuildContext context,
+    String title,
+    String author,
+    List<String> notes,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -262,75 +287,71 @@ class HomeScreen extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          // Integrated General Notes inside the Top Bar / Hero Box
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: () {
+                HapticFeedback.selectionClick();
+                GeneralNotesSheet.show(context, notes);
+              },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.hairline),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.menu_book_rounded,
+                      color: AppColors.metallicGold,
+                      size: 20,
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'تنبيهات عامة من المصنف',
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'إرشادات هامة في ترتيب الأذكار وقضائها لمن نسيها',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 14,
+                      color: AppColors.textTertiary,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildGeneralNotesCard(BuildContext context, List<String> notes) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        GeneralNotesSheet.show(context, notes);
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.hairline),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppColors.badgeGoldBg,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.badgeGoldBorder),
-              ),
-              child: const Icon(
-                Icons.menu_book_rounded,
-                color: AppColors.metallicGold,
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: 14),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'تنبيهات عامة من المصنف',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'إرشادات هامة في ترتيب الأذكار وقضائها لمن نسيها',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 16,
-              color: AppColors.textTertiary,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCategoryCard(
+  Widget _buildCategoryGridCard(
     BuildContext context,
     AzkarCategory category,
     AzkarProvider provider,
@@ -342,7 +363,6 @@ class HomeScreen extends StatelessWidget {
     final isCompleted = totalCount > 0 && completedCount == totalCount;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         color: AppColors.cardSurface,
         borderRadius: BorderRadius.circular(20),
@@ -376,21 +396,22 @@ class HomeScreen extends StatelessWidget {
             );
           },
           child: Padding(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Top row: Icon, Category Name, Completion Pill
+                // Top row: Icon and Completion Pill / Arrow
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      width: 44,
-                      height: 44,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
                         color: isMorning
                             ? AppColors.badgeGoldBg
                             : const Color(0x245C6BC0),
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(12),
                         border: isMorning
                             ? Border.all(color: AppColors.badgeGoldBorder)
                             : null,
@@ -402,40 +423,16 @@ class HomeScreen extends StatelessWidget {
                         color: isMorning
                             ? AppColors.metallicGold
                             : const Color(0xFF7986CB),
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            category.categoryName,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '$totalCount ذكراً مأثوراً',
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
+                        size: 22,
                       ),
                     ),
                     if (isCompleted)
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: AppColors.badgeGoldBg,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: AppColors.badgeGoldBorder),
                         ),
                         child: const Row(
@@ -443,15 +440,15 @@ class HomeScreen extends StatelessWidget {
                           children: [
                             Icon(
                               Icons.star_rounded,
-                              size: 14,
+                              size: 13,
                               color: AppColors.metallicGold,
                             ),
-                            SizedBox(width: 4),
+                            SizedBox(width: 3),
                             Text(
                               'مكتمل',
                               style: TextStyle(
                                 color: AppColors.metallicGold,
-                                fontSize: 12,
+                                fontSize: 11,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -461,53 +458,74 @@ class HomeScreen extends StatelessWidget {
                     else
                       const Icon(
                         Icons.arrow_forward_ios_rounded,
-                        size: 16,
+                        size: 14,
                         color: AppColors.textTertiary,
                       ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
+
+                // Category Title & Count
+                Text(
+                  category.categoryName,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '$totalCount ذكراً مأثوراً',
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
+                  ),
+                ),
+                const SizedBox(height: 10),
 
                 // Time window subtitle
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Icon(
                         Icons.schedule_rounded,
-                        size: 15,
+                        size: 13,
                         color: AppColors.textSecondary,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           category.timeWindow,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: AppColors.textSecondary,
-                            fontSize: 12,
-                            height: 1.4,
+                            fontSize: 11,
+                            height: 1.3,
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
 
                 // Progress Indicator
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'الإنجاز: $completedCount من $totalCount',
+                      'الإنجاز: $completedCount/$totalCount',
                       style: const TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -517,7 +535,7 @@ class HomeScreen extends StatelessWidget {
                         color: isCompleted
                             ? AppColors.metallicGold
                             : AppColors.textSecondary,
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

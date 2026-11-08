@@ -421,22 +421,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 ),
               ),
               Row(
+                textDirection: TextDirection.ltr,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
-                    tooltip: 'الذكر السابق',
-                    color: _currentPage > 0
-                        ? AppColors.textPrimary
-                        : AppColors.textTertiary,
-                    onPressed: _currentPage > 0
-                        ? () {
-                            _pageController.previousPage(
-                              duration: const Duration(milliseconds: 260),
-                              curve: Curves.easeInOut,
-                            );
-                          }
-                        : null,
-                  ),
                   IconButton(
                     icon: const Icon(Icons.arrow_back_ios_rounded, size: 16),
                     tooltip: 'الذكر التالي',
@@ -446,6 +432,21 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     onPressed: _currentPage < total - 1
                         ? () {
                             _pageController.nextPage(
+                              duration: const Duration(milliseconds: 260),
+                              curve: Curves.easeInOut,
+                            );
+                          }
+                        : null,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                    tooltip: 'الذكر السابق',
+                    color: _currentPage > 0
+                        ? AppColors.textPrimary
+                        : AppColors.textTertiary,
+                    onPressed: _currentPage > 0
+                        ? () {
+                            _pageController.previousPage(
                               duration: const Duration(milliseconds: 260),
                               curve: Curves.easeInOut,
                             );

@@ -129,4 +129,65 @@ void main() {
         AppTheme.darkTheme.colorScheme.tertiaryContainer, AppColors.badgeGoldBg);
     expect(AppTheme.darkTheme.scaffoldBackgroundColor, AppColors.pitchBlack);
   });
+
+  testWidgets(
+      'HomeScreen displays categories in 2-column grid and CategoryScreen has proper carousel arrows',
+      (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final storage = StorageService(await SharedPreferences.getInstance());
+    final provider = AzkarProvider(storage);
+    await provider.loadData();
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [ChangeNotifierProvider.value(value: provider)],
+        child: const AlKhulasahApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify AppBar action button for general notes exists
+    expect(find.byTooltip('تنبيهات عامة'), findsOneWidget);
+
+    // Verify categories are placed in a 2-column grid (same vertical Y coordinate)
+    final morningCenter = tester.getCenter(find.text('أذكار الصباح'));
+    final eveningCenter = tester.getCenter(find.text('أذكار المساء'));
+    // Since they are arranged horizontally in a 2-column grid, their Y coordinates match closely
+    expect((morningCenter.dy - eveningCenter.dy).abs(), lessThan(5.0));
+    // And their X coordinates are distinct (side-by-side)
+    expect(morningCenter.dx, isNot(equals(eveningCenter.dx)));
+
+    // Open category screen and switch to swipe mode
+    await tester.tap(find.text('أذكار الصباح'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('عرض كبطاقات متتابعة'));
+    await tester.pumpAndSettle();
+
+    final nextBtn = find.byTooltip('الذكر التالي');
+    final prevBtn = find.byTooltip('الذكر السابق');
+    expect(nextBtn, findsOneWidget);
+    expect(prevBtn, findsOneWidget);
+
+    // Verify arrow icons
+    final nextIcon = tester.widget<Icon>(find.descendant(of: nextBtn, matching: find.byType(Icon)));
+    final prevIcon = tester.widget<Icon>(find.descendant(of: prevBtn, matching: find.byType(Icon)));
+    expect(nextIcon.icon, Icons.arrow_back_ios_rounded);
+    expect(prevIcon.icon, Icons.arrow_forward_ios_rounded);
+
+    // Verify left/right positions: next is on the left (dx < prev dx) and points left
+    final nextCenter = tester.getCenter(nextBtn);
+    final prevCenter = tester.getCenter(prevBtn);
+    expect(nextCenter.dx, lessThan(prevCenter.dx));
+
+    // Tap next arrow and verify it advances to zikr 2
+    expect(find.textContaining('الذكر 1 من'), findsOneWidget);
+    await tester.tap(nextBtn);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('الذكر 2 من'), findsOneWidget);
+
+    // Tap prev arrow and verify it returns to zikr 1
+    await tester.tap(prevBtn);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('الذكر 1 من'), findsOneWidget);
+  });
 }
