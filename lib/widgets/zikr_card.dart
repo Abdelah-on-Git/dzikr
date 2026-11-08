@@ -95,14 +95,14 @@ class _ZikrCardState extends State<ZikrCard>
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: widget.isCompleted
-              ? AppColors.pitchGreen.withOpacity(0.45)
+              ? AppColors.pitchGreen.withValues(alpha: 0.45)
               : AppColors.hairline,
           width: widget.isCompleted ? 1.5 : 1.0,
         ),
         boxShadow: widget.isCompleted
             ? [
                 BoxShadow(
-                  color: AppColors.pitchGreenGlow.withOpacity(0.18),
+                  color: AppColors.pitchGreenGlow.withValues(alpha: 0.18),
                   blurRadius: 18,
                   offset: const Offset(0, 4),
                 )
@@ -271,7 +271,7 @@ class _ZikrCardState extends State<ZikrCard>
                               ? null
                               : [
                                   BoxShadow(
-                                    color: AppColors.pitchGreen.withOpacity(0.3),
+                                    color: AppColors.pitchGreen.withValues(alpha: 0.3),
                                     blurRadius: 16,
                                     offset: const Offset(0, 4),
                                   ),
@@ -290,7 +290,7 @@ class _ZikrCardState extends State<ZikrCard>
                                     progress,
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.18),
+                                    color: Colors.white.withValues(alpha: 0.18),
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                 ),

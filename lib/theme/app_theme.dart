@@ -13,10 +13,8 @@ class AppTheme {
         primary: AppColors.pitchGreen,
         secondary: AppColors.pitchGreen,
         surface: AppColors.surface,
-        background: AppColors.pitchBlack,
         onPrimary: AppColors.pitchBlack,
         onSurface: AppColors.textPrimary,
-        onBackground: AppColors.textPrimary,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.pitchBlack,
@@ -31,7 +29,7 @@ class AppTheme {
           fontWeight: FontWeight.w700,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.cardSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(

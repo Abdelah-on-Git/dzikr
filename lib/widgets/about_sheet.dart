@@ -59,7 +59,7 @@ class AboutSheet extends StatelessWidget {
                   border: Border.all(color: AppColors.badgeGreenBorder),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.pitchGreenGlow.withOpacity(0.2),
+                      color: AppColors.pitchGreenGlow.withValues(alpha: 0.2),
                       blurRadius: 20,
                     ),
                   ],
