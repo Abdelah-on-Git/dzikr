@@ -48,25 +48,25 @@ class AboutSheet extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // Icon / Emblem
+            // Icon / Emblem (Gilded Medallion)
             Center(
               child: Container(
                 width: 68,
                 height: 68,
                 decoration: BoxDecoration(
-                  color: AppColors.badgeGreenBg,
+                  color: AppColors.badgeGoldBg,
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.badgeGreenBorder),
+                  border: Border.all(color: AppColors.badgeGoldBorder, width: 1.5),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.pitchGreenGlow.withValues(alpha: 0.2),
+                      color: AppColors.metallicGoldGlow.withValues(alpha: 0.35),
                       blurRadius: 20,
                     ),
                   ],
                 ),
                 child: const Icon(
                   Icons.auto_stories_rounded,
-                  color: AppColors.pitchGreen,
+                  color: AppColors.metallicGold,
                   size: 32,
                 ),
               ),
@@ -87,14 +87,25 @@ class AboutSheet extends StatelessWidget {
             const SizedBox(height: 8),
 
             // Author
-            Text(
-              'تأليف: الشيخ $author',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.pitchGreen,
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'تأليف: الشيخ ',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 15,
+                  ),
+                ),
+                Text(
+                  author,
+                  style: const TextStyle(
+                    color: AppColors.metallicGold,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 20),
 

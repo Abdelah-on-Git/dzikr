@@ -207,6 +207,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   provider.isSwipeMode
                       ? Icons.view_agenda_rounded
                       : Icons.view_carousel_rounded,
+                  color: provider.isSwipeMode ? AppColors.metallicGold : null,
                 ),
                 tooltip:
                     provider.isSwipeMode ? 'عرض كقائمة' : 'عرض كبطاقات متتابعة',
@@ -391,12 +392,32 @@ class _CategoryScreenState extends State<CategoryScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'الذكر ${_currentPage + 1} من $total',
-                style: const TextStyle(
-                  color: AppColors.pitchGreen,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.badgeGoldBg,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.badgeGoldBorder),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.auto_stories_rounded,
+                      size: 13,
+                      color: AppColors.metallicGold,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'الذكر ${_currentPage + 1} من $total',
+                      style: const TextStyle(
+                        color: AppColors.metallicGold,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Row(

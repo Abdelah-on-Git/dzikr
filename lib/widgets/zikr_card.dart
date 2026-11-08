@@ -117,14 +117,14 @@ class _ZikrCardState extends State<ZikrCard>
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
             child: Row(
               children: [
-                // Repetition Badge
+                // Repetition Badge (Islamic Gold accent)
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: AppColors.badgeGoldBg,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.hairline),
+                    border: Border.all(color: AppColors.badgeGoldBorder),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -132,13 +132,13 @@ class _ZikrCardState extends State<ZikrCard>
                       const Icon(
                         Icons.repeat_rounded,
                         size: 14,
-                        color: AppColors.textSecondary,
+                        color: AppColors.metallicGold,
                       ),
                       const SizedBox(width: 5),
                       Text(
                         widget.item.repeatText,
                         style: const TextStyle(
-                          color: AppColors.textSecondary,
+                          color: AppColors.metallicGold,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -161,15 +161,15 @@ class _ZikrCardState extends State<ZikrCard>
                         backgroundColor: AppColors.surface,
                         valueColor: AlwaysStoppedAnimation<Color>(
                           widget.isCompleted
-                              ? AppColors.pitchGreen
+                              ? AppColors.metallicGold
                               : AppColors.pitchGreen.withValues(alpha: 0.85),
                         ),
                       ),
                       if (widget.isCompleted)
                         const Icon(
-                          Icons.check,
-                          size: 12,
-                          color: AppColors.pitchGreen,
+                          Icons.star_rounded,
+                          size: 13,
+                          color: AppColors.metallicGold,
                         ),
                     ],
                   ),

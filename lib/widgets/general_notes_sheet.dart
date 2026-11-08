@@ -52,13 +52,13 @@ class GeneralNotesSheet extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: AppColors.badgeGoldBg,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.hairline),
+                    border: Border.all(color: AppColors.badgeGoldBorder),
                   ),
                   child: const Icon(
                     Icons.menu_book_rounded,
-                    color: AppColors.pitchGreen,
+                    color: AppColors.metallicGold,
                     size: 20,
                   ),
                 ),
@@ -95,14 +95,14 @@ class GeneralNotesSheet extends StatelessWidget {
                       height: 26,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: AppColors.badgeGreenBg,
+                        color: AppColors.badgeGoldBg,
                         shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.badgeGreenBorder),
+                        border: Border.all(color: AppColors.badgeGoldBorder),
                       ),
                       child: Text(
                         '$index',
                         style: const TextStyle(
-                          color: AppColors.pitchGreen,
+                          color: AppColors.metallicGold,
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),

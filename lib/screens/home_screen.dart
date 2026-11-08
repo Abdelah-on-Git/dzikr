@@ -191,13 +191,19 @@ class HomeScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.badgeGreenBg,
+                  color: AppColors.badgeGoldBg,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.badgeGreenBorder),
+                  border: Border.all(color: AppColors.badgeGoldBorder),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: AppColors.metallicGoldGlow,
+                      blurRadius: 10,
+                    ),
+                  ],
                 ),
                 child: const Icon(
                   Icons.auto_stories_rounded,
-                  color: AppColors.pitchGreen,
+                  color: AppColors.metallicGold,
                   size: 24,
                 ),
               ),
@@ -209,7 +215,7 @@ class HomeScreen extends StatelessWidget {
                     Text(
                       'أذكار اليوم والليلة',
                       style: TextStyle(
-                        color: AppColors.pitchGreen,
+                        color: AppColors.metallicGold,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -237,12 +243,24 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          Text(
-            'تأليف: الشيخ $author',
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-            ),
+          Row(
+            children: [
+              const Text(
+                'تأليف: الشيخ ',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                ),
+              ),
+              Text(
+                author,
+                style: const TextStyle(
+                  color: AppColors.metallicGold,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -370,16 +388,19 @@ class HomeScreen extends StatelessWidget {
                       height: 44,
                       decoration: BoxDecoration(
                         color: isMorning
-                            ? const Color(0x24FFB300)
+                            ? AppColors.badgeGoldBg
                             : const Color(0x245C6BC0),
                         borderRadius: BorderRadius.circular(14),
+                        border: isMorning
+                            ? Border.all(color: AppColors.badgeGoldBorder)
+                            : null,
                       ),
                       child: Icon(
                         isMorning
                             ? Icons.wb_sunny_rounded
                             : Icons.nightlight_round,
                         color: isMorning
-                            ? const Color(0xFFFFB300)
+                            ? AppColors.metallicGold
                             : const Color(0xFF7986CB),
                         size: 24,
                       ),

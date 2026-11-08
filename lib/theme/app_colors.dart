@@ -15,6 +15,9 @@ class AppColors {
   // Accent Colors
   static const Color pitchGreen = Color(0xFF30D158);
   static const Color pitchGreenGlow = Color(0x3330D158);
+  static const Color metallicGold = Color(0xFFD4AF37);
+  static const Color accentGold = Color(0xFFD4AF37);
+  static const Color metallicGoldGlow = Color(0x33D4AF37);
   static const Color appleOrange = Color(0xFFFF9F0A);
   static const Color appleRed = Color(0xFFFF453A);
 
@@ -26,6 +29,9 @@ class AppColors {
   // Badge colors
   static const Color badgeGreenBg = Color(0x1F30D158); // rgba(48, 209, 88, 0.12)
   static const Color badgeGreenBorder = Color(0x4030D158); // rgba(48, 209, 88, 0.25)
+
+  static const Color badgeGoldBg = Color(0x1FD4AF37); // rgba(212, 175, 55, 0.12)
+  static const Color badgeGoldBorder = Color(0x40D4AF37); // rgba(212, 175, 55, 0.25)
 
   static const Color badgeOrangeBg = Color(0x1FFF9F0A);
   static const Color badgeOrangeBorder = Color(0x40FF9F0A);

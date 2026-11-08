@@ -12,6 +12,7 @@ class AppTheme {
       colorScheme: const ColorScheme.dark(
         primary: AppColors.pitchGreen,
         secondary: AppColors.pitchGreen,
+        tertiary: AppColors.metallicGold,
         surface: AppColors.surface,
         onPrimary: AppColors.pitchBlack,
         onSurface: AppColors.textPrimary,
