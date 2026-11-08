@@ -116,4 +116,18 @@ void main() {
     expect(localProvider.getCount(1), 0);
     expect(localProvider.getCount(5), 0);
   });
+
+  test('Theme mode toggles and is persisted in storage', () async {
+    // Default is dark mode
+    expect(provider.isDarkMode, true);
+
+    await provider.toggleThemeMode();
+    expect(provider.isDarkMode, false);
+    expect(storage.getIsDarkMode(), false);
+
+    await provider.toggleThemeMode();
+    expect(provider.isDarkMode, true);
+    expect(storage.getIsDarkMode(), true);
+  });
 }
+

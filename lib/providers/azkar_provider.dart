@@ -13,6 +13,7 @@ class AzkarProvider extends ChangeNotifier {
   final Map<int, int> _counts = {};
   double _fontScale = 1.0;
   bool _isSwipeMode = false;
+  bool _isDarkMode = true;
 
   AzkarProvider(this._storage);
 
@@ -20,6 +21,8 @@ class AzkarProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   double get fontScale => _fontScale;
   bool get isSwipeMode => _isSwipeMode;
+  bool get isDarkMode => _isDarkMode;
+
 
   Future<void> loadData() async {
     _isLoading = true;
@@ -41,6 +44,8 @@ class AzkarProvider extends ChangeNotifier {
 
     _fontScale = _storage.getFontScale();
     _isSwipeMode = _storage.getViewMode() == 'swipe';
+    _isDarkMode = _storage.getIsDarkMode();
+
 
     _book = await AzkarRepository.getBook();
     for (final category in _book!.categories) {
@@ -146,4 +151,12 @@ class AzkarProvider extends ChangeNotifier {
     notifyListeners();
     await _storage.setViewMode(_isSwipeMode ? 'swipe' : 'list');
   }
+
+  Future<void> toggleThemeMode() async {
+    _isDarkMode = !_isDarkMode;
+    notifyListeners();
+    HapticFeedback.selectionClick();
+    await _storage.setIsDarkMode(_isDarkMode);
+  }
 }
+

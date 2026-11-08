@@ -14,6 +14,8 @@ class StorageService {
   static const String _keyLastDate = 'zikr_last_date';
   static const String _keyFontScale = 'zikr_font_scale';
   static const String _keyViewMode = 'zikr_view_mode';
+  static const String _keyIsDarkMode = 'zikr_is_dark_mode';
+
 
   int getCount(int zikrId) {
     return _prefs.getInt('$_keyPrefix$zikrId') ?? 0;
@@ -63,4 +65,13 @@ class StorageService {
   Future<void> setViewMode(String mode) async {
     await _prefs.setString(_keyViewMode, mode);
   }
+
+  bool getIsDarkMode() {
+    return _prefs.getBool(_keyIsDarkMode) ?? true;
+  }
+
+  Future<void> setIsDarkMode(bool isDark) async {
+    await _prefs.setBool(_keyIsDarkMode, isDark);
+  }
 }
+
