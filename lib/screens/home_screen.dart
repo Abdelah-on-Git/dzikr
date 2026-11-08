@@ -11,24 +11,25 @@ import 'category_screen.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  void _showResetAllDialog(BuildContext context, AzkarProvider provider) {
+  void _showResetAllDialog(
+      BuildContext context, AzkarProvider provider, AppThemeColors colors) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.cardSurface,
+        backgroundColor: colors.cardSurface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
+        title: Text(
           'تصفير جميع العدادات',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
         ),
-        content: const Text(
+        content: Text(
           'هل تريد إعادة ضبط جميع عدادات أذكار الصباح والمساء؟',
           style: TextStyle(
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
             fontSize: 14,
             height: 1.5,
           ),
@@ -36,15 +37,15 @@ class HomeScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
+            child: Text(
               'إلغاء',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: colors.textSecondary),
             ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.appleRed,
-              foregroundColor: AppColors.textPrimary,
+              foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -55,11 +56,11 @@ class HomeScreen extends StatelessWidget {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text(
+                  content: Text(
                     'تمت إعادة ضبط جميع العدادات بنجاح',
-                    style: TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: colors.textPrimary),
                   ),
-                  backgroundColor: AppColors.elevatedSurface,
+                  backgroundColor: colors.elevatedSurface,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -81,11 +82,14 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AzkarProvider>(
       builder: (context, provider, _) {
+        final colors = AppColors.of(context);
+
         if (provider.isLoading) {
-          return const Scaffold(
+          return Scaffold(
+            backgroundColor: colors.scaffoldBg,
             body: Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.pitchGreen),
+                valueColor: AlwaysStoppedAnimation<Color>(colors.accentGreen),
               ),
             ),
           );
@@ -93,23 +97,45 @@ class HomeScreen extends StatelessWidget {
 
         final book = provider.book;
         if (book == null) {
-          return const Scaffold(
+          return Scaffold(
+            backgroundColor: colors.scaffoldBg,
             body: Center(
               child: Text(
                 'تعذر تحميل بيانات الأذكار',
-                style: TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: colors.textSecondary),
               ),
             ),
           );
         }
 
         return Scaffold(
+          backgroundColor: colors.scaffoldBg,
           appBar: AppBar(
-            title: const Text(
+            backgroundColor: colors.scaffoldBg,
+            foregroundColor: colors.textPrimary,
+            title: Text(
               'الخلاصة الحسناء',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: colors.textPrimary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             actions: [
+              IconButton(
+                icon: Icon(
+                  provider.isDarkMode
+                      ? Icons.wb_sunny_rounded
+                      : Icons.nightlight_round,
+                  color: provider.isDarkMode
+                      ? colors.metallicGold
+                      : colors.accentGreen,
+                ),
+                tooltip: provider.isDarkMode ? 'الوضع النهاري' : 'الوضع الليلي',
+                onPressed: () {
+                  HapticFeedback.selectionClick();
+                  provider.toggleThemeMode();
+                },
+              ),
               IconButton(
                 icon: const Icon(Icons.menu_book_rounded),
                 tooltip: 'تنبيهات عامة',
@@ -133,7 +159,8 @@ class HomeScreen extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.restart_alt_rounded),
                 tooltip: 'تصفير الكل',
-                onPressed: () => _showResetAllDialog(context, provider),
+                onPressed: () =>
+                    _showResetAllDialog(context, provider, colors),
               ),
               const SizedBox(width: 8),
             ],
@@ -143,39 +170,38 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Hero Header Card with Integrated General Notes
+                // Hero Header Card with App Logo and Integrated General Notes
                 _buildHeroCard(
                   context,
                   book.bookTitle,
                   book.author,
                   book.generalNotes,
+                  colors,
                 ),
 
                 const SizedBox(height: 24),
 
                 // Section Title
-                const Text(
+                Text(
                   'أبواب الأذكار',
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 12),
 
-                // Two Category Boxes in 2-Column Grid Form
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                // Category Boxes in Single-Column Vertical Stack (thumb-friendly layout)
+                Column(
                   children: [
                     for (int i = 0; i < book.categories.length; i++) ...[
-                      if (i > 0) const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildCategoryGridCard(
-                          context,
-                          book.categories[i],
-                          provider,
-                        ),
+                      if (i > 0) const SizedBox(height: 12),
+                      _buildCategoryCard(
+                        context,
+                        book.categories[i],
+                        provider,
+                        colors,
                       ),
                     ],
                   ],
@@ -193,17 +219,18 @@ class HomeScreen extends StatelessWidget {
     String title,
     String author,
     List<String> notes,
+    AppThemeColors colors,
   ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.cardSurface,
+        color: colors.cardSurface,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.hairline),
+        border: Border.all(color: colors.hairline),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
-            blurRadius: 12,
+            color: colors.shadowColor,
+            blurRadius: 14,
             offset: const Offset(0, 4),
           ),
         ],
@@ -213,34 +240,37 @@ class HomeScreen extends StatelessWidget {
         children: [
           Row(
             children: [
+              // Prominent App Logo
               Container(
-                padding: const EdgeInsets.all(10),
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.badgeGoldBg,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.badgeGoldBorder),
-                  boxShadow: const [
+                  border: Border.all(color: colors.badgeGoldBorder, width: 1.5),
+                  boxShadow: [
                     BoxShadow(
-                      color: AppColors.metallicGoldGlow,
+                      color: colors.metallicGoldGlow,
                       blurRadius: 10,
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.auto_stories_rounded,
-                  color: AppColors.metallicGold,
-                  size: 24,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12.5),
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'أذكار اليوم والليلة',
                       style: TextStyle(
-                        color: AppColors.metallicGold,
+                        color: colors.metallicGold,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -248,7 +278,7 @@ class HomeScreen extends StatelessWidget {
                     Text(
                       'وفق السنة النبوية الصحيحة',
                       style: TextStyle(
-                        color: AppColors.textTertiary,
+                        color: colors.textTertiary,
                         fontSize: 12,
                       ),
                     ),
@@ -260,8 +290,8 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             title,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: colors.textPrimary,
               fontSize: 18,
               fontWeight: FontWeight.bold,
               height: 1.4,
@@ -270,17 +300,17 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 6),
           Row(
             children: [
-              const Text(
+              Text(
                 'تأليف: الشيخ ',
                 style: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                   fontSize: 14,
                 ),
               ),
               Text(
                 author,
-                style: const TextStyle(
-                  color: AppColors.metallicGold,
+                style: TextStyle(
+                  color: colors.metallicGold,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -301,18 +331,18 @@ class HomeScreen extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: colors.surface,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.hairline),
+                  border: Border.all(color: colors.hairline),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
                     Icon(
                       Icons.menu_book_rounded,
-                      color: AppColors.metallicGold,
+                      color: colors.metallicGold,
                       size: 20,
                     ),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,16 +350,16 @@ class HomeScreen extends StatelessWidget {
                           Text(
                             'تنبيهات عامة من المصنف',
                             style: TextStyle(
-                              color: AppColors.textPrimary,
+                              color: colors.textPrimary,
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 2),
+                          const SizedBox(height: 2),
                           Text(
                             'إرشادات هامة في ترتيب الأذكار وقضائها لمن نسيها',
                             style: TextStyle(
-                              color: AppColors.textSecondary,
+                              color: colors.textSecondary,
                               fontSize: 11,
                             ),
                           ),
@@ -339,7 +369,7 @@ class HomeScreen extends StatelessWidget {
                     Icon(
                       Icons.arrow_forward_ios_rounded,
                       size: 14,
-                      color: AppColors.textTertiary,
+                      color: colors.textTertiary,
                     ),
                   ],
                 ),
@@ -351,10 +381,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryGridCard(
+  Widget _buildCategoryCard(
     BuildContext context,
     AzkarCategory category,
     AzkarProvider provider,
+    AppThemeColors colors,
   ) {
     final isMorning = category.categoryId == 'morning';
     final completedCount = provider.getCompletedCount(category);
@@ -364,23 +395,23 @@ class HomeScreen extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cardSurface,
+        color: colors.cardSurface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isCompleted
-              ? AppColors.pitchGreen.withValues(alpha: 0.4)
-              : AppColors.hairline,
+              ? colors.accentGreen.withValues(alpha: 0.45)
+              : colors.hairline,
           width: isCompleted ? 1.5 : 1,
         ),
-        boxShadow: isCompleted
-            ? [
-                BoxShadow(
-                  color: AppColors.pitchGreenGlow.withValues(alpha: 0.12),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
-                )
-              ]
-            : null,
+        boxShadow: [
+          BoxShadow(
+            color: isCompleted
+                ? colors.greenGlow.withValues(alpha: 0.16)
+                : colors.shadowColor,
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -396,24 +427,25 @@ class HomeScreen extends StatelessWidget {
             );
           },
           child: Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Top row: Icon and Completion Pill / Arrow
+                // Top row: Category icon, titles, and completion badge / chevron
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      width: 40,
-                      height: 40,
+                      width: 46,
+                      height: 46,
                       decoration: BoxDecoration(
                         color: isMorning
-                            ? AppColors.badgeGoldBg
-                            : const Color(0x245C6BC0),
-                        borderRadius: BorderRadius.circular(12),
+                            ? colors.badgeGoldBg
+                            : (colors.isDark
+                                ? const Color(0x245C6BC0)
+                                : const Color(0x1A3F51B5)),
+                        borderRadius: BorderRadius.circular(14),
                         border: isMorning
-                            ? Border.all(color: AppColors.badgeGoldBorder)
+                            ? Border.all(color: colors.badgeGoldBorder)
                             : null,
                       ),
                       child: Icon(
@@ -421,33 +453,59 @@ class HomeScreen extends StatelessWidget {
                             ? Icons.wb_sunny_rounded
                             : Icons.nightlight_round,
                         color: isMorning
-                            ? AppColors.metallicGold
-                            : const Color(0xFF7986CB),
-                        size: 22,
+                            ? colors.metallicGold
+                            : (colors.isDark
+                                ? const Color(0xFF7986CB)
+                                : const Color(0xFF3F51B5)),
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            category.categoryName,
+                            style: TextStyle(
+                              color: colors.textPrimary,
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            '$totalCount ذكراً مأثوراً',
+                            style: TextStyle(
+                              color: colors.textSecondary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     if (isCompleted)
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                            horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: AppColors.badgeGoldBg,
+                          color: colors.badgeGoldBg,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.badgeGoldBorder),
+                          border: Border.all(color: colors.badgeGoldBorder),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
                               Icons.star_rounded,
-                              size: 13,
-                              color: AppColors.metallicGold,
+                              size: 14,
+                              color: colors.metallicGold,
                             ),
-                            SizedBox(width: 3),
+                            const SizedBox(width: 4),
                             Text(
                               'مكتمل',
                               style: TextStyle(
-                                color: AppColors.metallicGold,
+                                color: colors.metallicGold,
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -456,58 +514,38 @@ class HomeScreen extends StatelessWidget {
                         ),
                       )
                     else
-                      const Icon(
+                      Icon(
                         Icons.arrow_forward_ios_rounded,
-                        size: 14,
-                        color: AppColors.textTertiary,
+                        size: 16,
+                        color: colors.textTertiary,
                       ),
                   ],
                 ),
                 const SizedBox(height: 12),
 
-                // Category Title & Count
-                Text(
-                  category.categoryName,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '$totalCount ذكراً مأثوراً',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 11,
-                  ),
-                ),
-                const SizedBox(height: 10),
-
                 // Time window subtitle
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: colors.surface,
                     borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: colors.hairline),
                   ),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.schedule_rounded,
-                        size: 13,
-                        color: AppColors.textSecondary,
+                        size: 14,
+                        color: colors.textSecondary,
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           category.timeWindow,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 11,
+                          style: TextStyle(
+                            color: colors.textSecondary,
+                            fontSize: 12,
                             height: 1.3,
                           ),
                         ),
@@ -515,17 +553,17 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
 
                 // Progress Indicator
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'الإنجاز: $completedCount/$totalCount',
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 11,
+                      'الإنجاز: $completedCount من $totalCount',
+                      style: TextStyle(
+                        color: colors.textSecondary,
+                        fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -533,9 +571,9 @@ class HomeScreen extends StatelessWidget {
                       '${(progress * 100).toInt()}%',
                       style: TextStyle(
                         color: isCompleted
-                            ? AppColors.metallicGold
-                            : AppColors.textSecondary,
-                        fontSize: 11,
+                            ? colors.metallicGold
+                            : colors.textSecondary,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -546,12 +584,12 @@ class HomeScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                   child: LinearProgressIndicator(
                     value: progress,
-                    minHeight: 5,
-                    backgroundColor: AppColors.surface,
+                    minHeight: 6,
+                    backgroundColor: colors.surface,
                     valueColor: AlwaysStoppedAnimation<Color>(
                       isCompleted
-                          ? AppColors.pitchGreen
-                          : AppColors.pitchGreen.withValues(alpha: 0.85),
+                          ? colors.accentGreen
+                          : colors.accentGreen.withValues(alpha: 0.85),
                     ),
                   ),
                 ),

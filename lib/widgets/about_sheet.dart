@@ -11,11 +11,13 @@ class AboutSheet extends StatelessWidget {
     required this.author,
   });
 
-  static void show(BuildContext context, {required String bookTitle, required String author}) {
+  static void show(BuildContext context,
+      {required String bookTitle, required String author}) {
+    final colors = AppColors.of(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.cardSurface,
+      backgroundColor: colors.cardSurface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -25,6 +27,7 @@ class AboutSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final bottomInset = MediaQuery.of(context).viewPadding.bottom;
 
     return SafeArea(
@@ -41,33 +44,35 @@ class AboutSheet extends StatelessWidget {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF545458),
+                  color: colors.isDark
+                      ? const Color(0xFF545458)
+                      : const Color(0xFFCED4DA),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
             const SizedBox(height: 20),
 
-            // Icon / Emblem (Gilded Medallion)
+            // App Logo Emblem prominently displayed
             Center(
               child: Container(
-                width: 68,
-                height: 68,
+                width: 76,
+                height: 76,
                 decoration: BoxDecoration(
-                  color: AppColors.badgeGoldBg,
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.badgeGoldBorder, width: 1.5),
+                  border: Border.all(color: colors.badgeGoldBorder, width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.metallicGoldGlow.withValues(alpha: 0.35),
-                      blurRadius: 20,
+                      color: colors.metallicGoldGlow.withValues(alpha: 0.35),
+                      blurRadius: 18,
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.auto_stories_rounded,
-                  color: AppColors.metallicGold,
-                  size: 32,
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
@@ -77,8 +82,8 @@ class AboutSheet extends StatelessWidget {
             Text(
               bookTitle,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: colors.textPrimary,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 height: 1.4,
@@ -90,17 +95,17 @@ class AboutSheet extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
+                Text(
                   'تأليف: الشيخ ',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                     fontSize: 15,
                   ),
                 ),
                 Text(
                   author,
-                  style: const TextStyle(
-                    color: AppColors.metallicGold,
+                  style: TextStyle(
+                    color: colors.metallicGold,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
@@ -113,28 +118,28 @@ class AboutSheet extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: colors.surface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.hairline),
+                border: Border.all(color: colors.hairline),
               ),
-              child: const Column(
+              child: Column(
                 children: [
                   Text(
                     'تطبيق مبارك يجمع أذكار الصباح والمساء وفق ما أثبته الشيخ صالح بن عبد الله العصيمي في كتابه «الخلاصة الحسناء»، ميسراً حفظها ومتابعة أعدادها وترتيبها.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                       fontSize: 14,
                       height: 1.7,
                     ),
                   ),
-                  SizedBox(height: 12),
-                  Divider(),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
+                  Divider(color: colors.hairline),
+                  const SizedBox(height: 12),
                   Text(
                     'يعمل التطبيق بالكامل دون اتصال بالإنترنت',
                     style: TextStyle(
-                      color: AppColors.textTertiary,
+                      color: colors.textTertiary,
                       fontSize: 12,
                     ),
                   ),
@@ -148,8 +153,9 @@ class AboutSheet extends StatelessWidget {
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.pitchGreen,
-                  foregroundColor: AppColors.pitchBlack,
+                  backgroundColor: colors.accentGreen,
+                  foregroundColor:
+                      colors.isDark ? AppColors.pitchBlack : Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),

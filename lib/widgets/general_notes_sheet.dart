@@ -10,10 +10,11 @@ class GeneralNotesSheet extends StatelessWidget {
   });
 
   static void show(BuildContext context, List<String> notes) {
+    final colors = AppColors.of(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.cardSurface,
+      backgroundColor: colors.cardSurface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -23,6 +24,7 @@ class GeneralNotesSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final bottomInset = MediaQuery.of(context).viewPadding.bottom;
 
     return SafeArea(
@@ -39,7 +41,9 @@ class GeneralNotesSheet extends StatelessWidget {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF545458),
+                  color: colors.isDark
+                      ? const Color(0xFF545458)
+                      : const Color(0xFFCED4DA),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -52,21 +56,21 @@ class GeneralNotesSheet extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.badgeGoldBg,
+                    color: colors.badgeGoldBg,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.badgeGoldBorder),
+                    border: Border.all(color: colors.badgeGoldBorder),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.menu_book_rounded,
-                    color: AppColors.metallicGold,
+                    color: colors.metallicGold,
                     size: 20,
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Text(
+                Text(
                   'تنبيهات عامة للمصنف',
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -83,9 +87,9 @@ class GeneralNotesSheet extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: colors.surface,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.hairline),
+                  border: Border.all(color: colors.hairline),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,14 +99,14 @@ class GeneralNotesSheet extends StatelessWidget {
                       height: 26,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: AppColors.badgeGoldBg,
+                        color: colors.badgeGoldBg,
                         shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.badgeGoldBorder),
+                        border: Border.all(color: colors.badgeGoldBorder),
                       ),
                       child: Text(
                         '$index',
-                        style: const TextStyle(
-                          color: AppColors.metallicGold,
+                        style: TextStyle(
+                          color: colors.metallicGold,
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
@@ -112,8 +116,8 @@ class GeneralNotesSheet extends StatelessWidget {
                     Expanded(
                       child: Text(
                         note,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: TextStyle(
+                          color: colors.textPrimary,
                           fontSize: 15,
                           height: 1.7,
                         ),
