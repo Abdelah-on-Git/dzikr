@@ -12,16 +12,35 @@ class AzkarProvider extends ChangeNotifier {
   bool _isLoading = true;
   final Map<int, int> _counts = {};
   double _fontScale = 1.0;
+  bool _isSwipeMode = false;
 
   AzkarProvider(this._storage);
 
   AzkarBook? get book => _book;
   bool get isLoading => _isLoading;
   double get fontScale => _fontScale;
+  bool get isSwipeMode => _isSwipeMode;
 
   Future<void> loadData() async {
     _isLoading = true;
     notifyListeners();
+
+    // Check calendar date for daily reset
+    final now = DateTime.now();
+    final today =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final lastDate = _storage.getLastDate();
+
+    if (lastDate != null && lastDate != today) {
+      // New day: reset daily counters so user can recite anew today
+      await _storage.resetAll();
+      await _storage.setLastDate(today);
+    } else if (lastDate == null) {
+      await _storage.setLastDate(today);
+    }
+
+    _fontScale = _storage.getFontScale();
+    _isSwipeMode = _storage.getViewMode() == 'swipe';
 
     _book = await AzkarRepository.getBook();
     for (final category in _book!.categories) {
@@ -42,10 +61,16 @@ class AzkarProvider extends ChangeNotifier {
     return getCount(item.id) >= item.repeatCount;
   }
 
+  bool canExceedRepeatCount(ZikrItem item) {
+    return item.note != null && item.note!.contains('وَتَزِيدُ');
+  }
+
   Future<void> increment(ZikrItem item) async {
     final current = getCount(item.id);
-    if (current >= item.repeatCount) {
-      // Already completed, give slight subtle haptic
+    final allowsExceed = canExceedRepeatCount(item);
+
+    if (current >= item.repeatCount && !allowsExceed) {
+      // Bounded item already reached target count
       HapticFeedback.selectionClick();
       return;
     }
@@ -54,7 +79,8 @@ class AzkarProvider extends ChangeNotifier {
     _counts[item.id] = next;
     notifyListeners();
 
-    if (next >= item.repeatCount) {
+    if (next == item.repeatCount) {
+      // Milestone reached
       HapticFeedback.mediumImpact();
     } else {
       HapticFeedback.lightImpact();
@@ -112,5 +138,12 @@ class AzkarProvider extends ChangeNotifier {
   void changeFontScale(double scale) {
     _fontScale = scale.clamp(0.85, 1.4);
     notifyListeners();
+    _storage.setFontScale(_fontScale);
+  }
+
+  Future<void> toggleViewMode() async {
+    _isSwipeMode = !_isSwipeMode;
+    notifyListeners();
+    await _storage.setViewMode(_isSwipeMode ? 'swipe' : 'list');
   }
 }

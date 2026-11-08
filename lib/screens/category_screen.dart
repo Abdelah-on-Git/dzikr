@@ -6,10 +6,30 @@ import '../providers/azkar_provider.dart';
 import '../theme/app_colors.dart';
 import '../widgets/zikr_card.dart';
 
-class CategoryScreen extends StatelessWidget {
+class CategoryScreen extends StatefulWidget {
   final AzkarCategory category;
 
   const CategoryScreen({super.key, required this.category});
+
+  @override
+  State<CategoryScreen> createState() => _CategoryScreenState();
+}
+
+class _CategoryScreenState extends State<CategoryScreen> {
+  late PageController _pageController;
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   void _showResetConfirmDialog(BuildContext context, AzkarProvider provider) {
     showDialog(
@@ -26,7 +46,7 @@ class CategoryScreen extends StatelessWidget {
           ),
         ),
         content: Text(
-          'هل تريد إعادة ضبط جميع أذكار ${category.categoryName} إلى الصفر؟',
+          'هل تريد إعادة ضبط جميع أذكار ${widget.category.categoryName} إلى الصفر؟',
           style: const TextStyle(
             color: AppColors.textSecondary,
             fontSize: 14,
@@ -51,7 +71,7 @@ class CategoryScreen extends StatelessWidget {
               ),
             ),
             onPressed: () {
-              provider.resetCategory(category);
+              provider.resetCategory(widget.category);
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -148,9 +168,7 @@ class CategoryScreen extends StatelessWidget {
             color: isSelected ? AppColors.pitchGreen : AppColors.surface,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isSelected
-                  ? AppColors.pitchGreen
-                  : AppColors.hairline,
+              color: isSelected ? AppColors.pitchGreen : AppColors.hairline,
             ),
           ),
           child: Center(
@@ -172,18 +190,31 @@ class CategoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AzkarProvider>(
       builder: (context, provider, _) {
-        final completedCount = provider.getCompletedCount(category);
-        final totalCount = category.items.length;
-        final progress = provider.getCategoryProgress(category);
+        final completedCount = provider.getCompletedCount(widget.category);
+        final totalCount = widget.category.items.length;
+        final progress = provider.getCategoryProgress(widget.category);
         final isAllDone = totalCount > 0 && completedCount == totalCount;
 
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              category.categoryName,
+              widget.category.categoryName,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             actions: [
+              IconButton(
+                icon: Icon(
+                  provider.isSwipeMode
+                      ? Icons.view_agenda_rounded
+                      : Icons.view_carousel_rounded,
+                ),
+                tooltip:
+                    provider.isSwipeMode ? 'عرض كقائمة' : 'عرض كبطاقات متتابعة',
+                onPressed: () {
+                  HapticFeedback.selectionClick();
+                  provider.toggleViewMode();
+                },
+              ),
               IconButton(
                 icon: const Icon(Icons.format_size_rounded),
                 tooltip: 'حجم الخط',
@@ -223,7 +254,7 @@ class CategoryScreen extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            category.timeWindow,
+                            widget.category.timeWindow,
                             style: const TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 13,
@@ -313,33 +344,130 @@ class CategoryScreen extends StatelessWidget {
                   ),
                 ),
 
-              // Zikr Cards List
+              // Zikr Cards View (List or Card-Swipe)
               Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 24, top: 4),
-                  itemCount: category.items.length,
-                  itemBuilder: (context, index) {
-                    final item = category.items[index];
-                    final currentCount = provider.getCount(item.id);
-                    final isCompleted = provider.isCompleted(item);
-
-                    return ZikrCard(
-                      key: ValueKey(item.id),
-                      item: item,
-                      currentCount: currentCount,
-                      isCompleted: isCompleted,
-                      fontScale: provider.fontScale,
-                      onIncrement: () => provider.increment(item),
-                      onDecrement: () => provider.decrement(item),
-                      onReset: () => provider.resetZikr(item.id),
-                    );
-                  },
-                ),
+                child: provider.isSwipeMode
+                    ? _buildSwipeView(provider)
+                    : _buildListView(provider),
               ),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildListView(AzkarProvider provider) {
+    return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 24, top: 4),
+      itemCount: widget.category.items.length,
+      itemBuilder: (context, index) {
+        final item = widget.category.items[index];
+        final currentCount = provider.getCount(item.id);
+        final isCompleted = provider.isCompleted(item);
+
+        return ZikrCard(
+          key: ValueKey(item.id),
+          item: item,
+          currentCount: currentCount,
+          isCompleted: isCompleted,
+          fontScale: provider.fontScale,
+          onIncrement: () => provider.increment(item),
+          onDecrement: () => provider.decrement(item),
+          onReset: () => provider.resetZikr(item.id),
+        );
+      },
+    );
+  }
+
+  Widget _buildSwipeView(AzkarProvider provider) {
+    final total = widget.category.items.length;
+
+    return Column(
+      children: [
+        // Stepper indicator
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'الذكر ${_currentPage + 1} من $total',
+                style: const TextStyle(
+                  color: AppColors.pitchGreen,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                    tooltip: 'الذكر السابق',
+                    color: _currentPage > 0
+                        ? AppColors.textPrimary
+                        : AppColors.textTertiary,
+                    onPressed: _currentPage > 0
+                        ? () {
+                            _pageController.previousPage(
+                              duration: const Duration(milliseconds: 260),
+                              curve: Curves.easeInOut,
+                            );
+                          }
+                        : null,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_rounded, size: 16),
+                    tooltip: 'الذكر التالي',
+                    color: _currentPage < total - 1
+                        ? AppColors.textPrimary
+                        : AppColors.textTertiary,
+                    onPressed: _currentPage < total - 1
+                        ? () {
+                            _pageController.nextPage(
+                              duration: const Duration(milliseconds: 260),
+                              curve: Curves.easeInOut,
+                            );
+                          }
+                        : null,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        // PageView
+        Expanded(
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: total,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              final item = widget.category.items[index];
+              final currentCount = provider.getCount(item.id);
+              final isCompleted = provider.isCompleted(item);
+
+              return SingleChildScrollView(
+                child: ZikrCard(
+                  key: ValueKey(item.id),
+                  item: item,
+                  currentCount: currentCount,
+                  isCompleted: isCompleted,
+                  fontScale: provider.fontScale,
+                  onIncrement: () => provider.increment(item),
+                  onDecrement: () => provider.decrement(item),
+                  onReset: () => provider.resetZikr(item.id),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

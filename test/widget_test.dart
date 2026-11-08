@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,7 +9,8 @@ import 'package:al_khulasah_al_hasna/services/storage_service.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('App renders Home, displays categories and general notes, and navigates',
+  testWidgets(
+      'App renders Home, displays categories and general notes, navigates, counts, and toggles swipe view',
       (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
@@ -52,10 +54,11 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify category screen opened
-    expect(find.text('مِنْ طُلُوعِ الفَجْرِ الثَّانِي إِلَى طُلُوعِ الشَّمْسِ'), findsOneWidget);
+    expect(find.text('مِنْ طُلُوعِ الفَجْرِ الثَّانِي إِلَى طُلُوعِ الشَّمْسِ'),
+        findsOneWidget);
     expect(find.textContaining('اللَّهُمَّ أَنْتَ رَبِّي'), findsOneWidget);
 
-    // Tap first zikr counter (0/1 -> 1/1)
+    // Tap first zikr counter button (0/1 -> 1/1)
     final firstCounter = find.text('0 / 1').first;
     expect(firstCounter, findsOneWidget);
     await tester.tap(firstCounter);
@@ -64,5 +67,40 @@ void main() {
     // Check that it reached 1/1 and marked as completed
     expect(find.text('تم الإنجاز (1 / 1)'), findsOneWidget);
     expect(find.text('مُكتمل'), findsWidgets);
+
+    // Test Decrement button in header
+    final decrementBtn = find.byTooltip('إنقاص').first;
+    expect(decrementBtn, findsOneWidget);
+    await tester.tap(decrementBtn);
+    await tester.pumpAndSettle();
+
+    // Now it should be 0 / 1 again
+    expect(find.text('0 / 1'), findsWidgets);
+
+    // Test Large Tap Area: tapping the text area directly increments
+    final zikrTextArea = find.textContaining('اللَّهُمَّ أَنْتَ رَبِّي');
+    await tester.tap(zikrTextArea);
+    await tester.pumpAndSettle();
+
+    // Back to 1 / 1
+    expect(find.text('تم الإنجاز (1 / 1)'), findsOneWidget);
+
+    // Toggle view mode to Card-Swipe mode
+    final toggleModeBtn = find.byTooltip('عرض كبطاقات متتابعة');
+    expect(toggleModeBtn, findsOneWidget);
+    await tester.tap(toggleModeBtn);
+    await tester.pumpAndSettle();
+
+    // In swipe mode, verify PageView stepper is visible
+    expect(find.textContaining('الذكر 1 من'), findsOneWidget);
+    expect(find.byType(PageView), findsOneWidget);
+
+    // Toggle back to list mode
+    final toggleBackBtn = find.byTooltip('عرض كقائمة');
+    expect(toggleBackBtn, findsOneWidget);
+    await tester.tap(toggleBackBtn);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ListView), findsOneWidget);
   });
 }

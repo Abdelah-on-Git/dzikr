@@ -11,6 +11,10 @@ class StorageService {
     return StorageService(prefs);
   }
 
+  static const String _keyLastDate = 'zikr_last_date';
+  static const String _keyFontScale = 'zikr_font_scale';
+  static const String _keyViewMode = 'zikr_view_mode';
+
   int getCount(int zikrId) {
     return _prefs.getInt('$_keyPrefix$zikrId') ?? 0;
   }
@@ -34,5 +38,29 @@ class StorageService {
     for (final key in keys) {
       await _prefs.remove(key);
     }
+  }
+
+  String? getLastDate() {
+    return _prefs.getString(_keyLastDate);
+  }
+
+  Future<void> setLastDate(String date) async {
+    await _prefs.setString(_keyLastDate, date);
+  }
+
+  double getFontScale() {
+    return _prefs.getDouble(_keyFontScale) ?? 1.0;
+  }
+
+  Future<void> setFontScale(double scale) async {
+    await _prefs.setDouble(_keyFontScale, scale);
+  }
+
+  String getViewMode() {
+    return _prefs.getString(_keyViewMode) ?? 'list';
+  }
+
+  Future<void> setViewMode(String mode) async {
+    await _prefs.setString(_keyViewMode, mode);
   }
 }
