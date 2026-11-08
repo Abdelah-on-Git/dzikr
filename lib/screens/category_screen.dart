@@ -31,24 +31,25 @@ class _CategoryScreenState extends State<CategoryScreen> {
     super.dispose();
   }
 
-  void _showResetConfirmDialog(BuildContext context, AzkarProvider provider) {
+  void _showResetConfirmDialog(
+      BuildContext context, AzkarProvider provider, AppThemeColors colors) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.cardSurface,
+        backgroundColor: colors.cardSurface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
+        title: Text(
           'إعادة ضبط العدادات',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
         ),
         content: Text(
           'هل تريد إعادة ضبط جميع أذكار ${widget.category.categoryName} إلى الصفر؟',
-          style: const TextStyle(
-            color: AppColors.textSecondary,
+          style: TextStyle(
+            color: colors.textSecondary,
             fontSize: 14,
             height: 1.5,
           ),
@@ -56,15 +57,15 @@ class _CategoryScreenState extends State<CategoryScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
+            child: Text(
               'إلغاء',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: colors.textSecondary),
             ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.appleRed,
-              foregroundColor: AppColors.textPrimary,
+              foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -75,11 +76,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text(
+                  content: Text(
                     'تمت إعادة ضبط العدادات بنجاح',
-                    style: TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: colors.textPrimary),
                   ),
-                  backgroundColor: AppColors.elevatedSurface,
+                  backgroundColor: colors.elevatedSurface,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -97,10 +98,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
-  void _showFontSizeSheet(BuildContext context, AzkarProvider provider) {
+  void _showFontSizeSheet(
+      BuildContext context, AzkarProvider provider, AppThemeColors colors) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.cardSurface,
+      backgroundColor: colors.cardSurface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -117,16 +119,18 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF545458),
+                      color: colors.isDark
+                          ? const Color(0xFF545458)
+                          : const Color(0xFFCED4DA),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'حجم خط الأذكار',
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -134,13 +138,13 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    _buildScaleOption(ctx, provider, 'صغير', 0.9),
+                    _buildScaleOption(ctx, provider, 'صغير', 0.9, colors),
                     const SizedBox(width: 10),
-                    _buildScaleOption(ctx, provider, 'متوسط', 1.0),
+                    _buildScaleOption(ctx, provider, 'متوسط', 1.0, colors),
                     const SizedBox(width: 10),
-                    _buildScaleOption(ctx, provider, 'كبير', 1.15),
+                    _buildScaleOption(ctx, provider, 'كبير', 1.15, colors),
                     const SizedBox(width: 10),
-                    _buildScaleOption(ctx, provider, 'كبير جداً', 1.3),
+                    _buildScaleOption(ctx, provider, 'كبير جداً', 1.3, colors),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -152,8 +156,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
-  Widget _buildScaleOption(
-      BuildContext context, AzkarProvider provider, String label, double scale) {
+  Widget _buildScaleOption(BuildContext context, AzkarProvider provider,
+      String label, double scale, AppThemeColors colors) {
     final isSelected = (provider.fontScale - scale).abs() < 0.05;
     return Expanded(
       child: GestureDetector(
@@ -165,17 +169,19 @@ class _CategoryScreenState extends State<CategoryScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.pitchGreen : AppColors.surface,
+            color: isSelected ? colors.accentGreen : colors.surface,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isSelected ? AppColors.pitchGreen : AppColors.hairline,
+              color: isSelected ? colors.accentGreen : colors.hairline,
             ),
           ),
           child: Center(
             child: Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppColors.pitchBlack : AppColors.textPrimary,
+                color: isSelected
+                    ? (colors.isDark ? AppColors.pitchBlack : Colors.white)
+                    : colors.textPrimary,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                 fontSize: 13,
               ),
@@ -190,27 +196,50 @@ class _CategoryScreenState extends State<CategoryScreen> {
   Widget build(BuildContext context) {
     return Consumer<AzkarProvider>(
       builder: (context, provider, _) {
+        final colors = AppColors.of(context);
         final completedCount = provider.getCompletedCount(widget.category);
         final totalCount = widget.category.items.length;
         final progress = provider.getCategoryProgress(widget.category);
         final isAllDone = totalCount > 0 && completedCount == totalCount;
 
         return Scaffold(
+          backgroundColor: colors.scaffoldBg,
           appBar: AppBar(
+            backgroundColor: colors.scaffoldBg,
+            foregroundColor: colors.textPrimary,
             title: Text(
               widget.category.categoryName,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: colors.textPrimary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             actions: [
+              IconButton(
+                icon: Icon(
+                  provider.isDarkMode
+                      ? Icons.wb_sunny_rounded
+                      : Icons.nightlight_round,
+                  color: provider.isDarkMode
+                      ? colors.metallicGold
+                      : colors.accentGreen,
+                ),
+                tooltip: provider.isDarkMode ? 'الوضع النهاري' : 'الوضع الليلي',
+                onPressed: () {
+                  HapticFeedback.selectionClick();
+                  provider.toggleThemeMode();
+                },
+              ),
               IconButton(
                 icon: Icon(
                   provider.isSwipeMode
                       ? Icons.view_agenda_rounded
                       : Icons.view_carousel_rounded,
-                  color: provider.isSwipeMode ? AppColors.metallicGold : null,
+                  color: provider.isSwipeMode ? colors.metallicGold : null,
                 ),
-                tooltip:
-                    provider.isSwipeMode ? 'عرض كقائمة' : 'عرض كبطاقات متتابعة',
+                tooltip: provider.isSwipeMode
+                    ? 'عرض كقائمة'
+                    : 'عرض كبطاقات متتابعة',
                 onPressed: () {
                   HapticFeedback.selectionClick();
                   provider.toggleViewMode();
@@ -219,12 +248,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
               IconButton(
                 icon: const Icon(Icons.format_size_rounded),
                 tooltip: 'حجم الخط',
-                onPressed: () => _showFontSizeSheet(context, provider),
+                onPressed: () =>
+                    _showFontSizeSheet(context, provider, colors),
               ),
               IconButton(
                 icon: const Icon(Icons.refresh_rounded),
                 tooltip: 'إعادة ضبط الكل',
-                onPressed: () => _showResetConfirmDialog(context, provider),
+                onPressed: () =>
+                    _showResetConfirmDialog(context, provider, colors),
               ),
               const SizedBox(width: 6),
             ],
@@ -233,12 +264,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
             children: [
               // Sticky Header: Time Window & Progress
               Container(
-                margin: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                margin: const EdgeInsets.fromLTRB(16, 4, 16, 10),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: colors.surface,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: AppColors.hairline),
+                  border: Border.all(color: colors.hairline),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -247,17 +278,17 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.schedule_rounded,
                           size: 16,
-                          color: AppColors.textSecondary,
+                          color: colors.textSecondary,
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             widget.category.timeWindow,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: TextStyle(
+                              color: colors.textSecondary,
                               fontSize: 13,
                               height: 1.4,
                             ),
@@ -273,8 +304,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       children: [
                         Text(
                           'الإنجاز: $completedCount من $totalCount',
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            color: colors.textPrimary,
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
@@ -283,8 +314,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           '${(progress * 100).toInt()}%',
                           style: TextStyle(
                             color: isAllDone
-                                ? AppColors.metallicGold
-                                : AppColors.textSecondary,
+                                ? colors.metallicGold
+                                : colors.textSecondary,
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
                           ),
@@ -299,11 +330,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       child: LinearProgressIndicator(
                         value: progress,
                         minHeight: 6,
-                        backgroundColor: AppColors.elevatedSurface,
+                        backgroundColor: colors.elevatedSurface,
                         valueColor: AlwaysStoppedAnimation<Color>(
                           isAllDone
-                              ? AppColors.pitchGreen
-                              : AppColors.pitchGreen.withValues(alpha: 0.9),
+                              ? colors.accentGreen
+                              : colors.accentGreen.withValues(alpha: 0.9),
                         ),
                       ),
                     ),
@@ -319,23 +350,23 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: AppColors.badgeGoldBg,
+                    color: colors.badgeGoldBg,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.badgeGoldBorder),
+                    border: Border.all(color: colors.badgeGoldBorder),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
                       Icon(
                         Icons.star_rounded,
-                        color: AppColors.metallicGold,
+                        color: colors.metallicGold,
                         size: 22,
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           'تقبل الله طاعتكم، أتممت قراءة الأذكار كاملة!',
                           style: TextStyle(
-                            color: AppColors.metallicGold,
+                            color: colors.metallicGold,
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
@@ -348,7 +379,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
               // Zikr Cards View (List or Card-Swipe)
               Expanded(
                 child: provider.isSwipeMode
-                    ? _buildSwipeView(provider)
+                    ? _buildSwipeView(provider, colors)
                     : _buildListView(provider),
               ),
             ],
@@ -381,85 +412,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
-  Widget _buildSwipeView(AzkarProvider provider) {
+  Widget _buildSwipeView(AzkarProvider provider, AppThemeColors colors) {
     final total = widget.category.items.length;
 
     return Column(
       children: [
-        // Stepper indicator
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.badgeGoldBg,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.badgeGoldBorder),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.auto_stories_rounded,
-                      size: 13,
-                      color: AppColors.metallicGold,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'الذكر ${_currentPage + 1} من $total',
-                      style: const TextStyle(
-                        color: AppColors.metallicGold,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Row(
-                textDirection: TextDirection.ltr,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_rounded, size: 16),
-                    tooltip: 'الذكر التالي',
-                    color: _currentPage < total - 1
-                        ? AppColors.textPrimary
-                        : AppColors.textTertiary,
-                    onPressed: _currentPage < total - 1
-                        ? () {
-                            _pageController.nextPage(
-                              duration: const Duration(milliseconds: 260),
-                              curve: Curves.easeInOut,
-                            );
-                          }
-                        : null,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
-                    tooltip: 'الذكر السابق',
-                    color: _currentPage > 0
-                        ? AppColors.textPrimary
-                        : AppColors.textTertiary,
-                    onPressed: _currentPage > 0
-                        ? () {
-                            _pageController.previousPage(
-                              duration: const Duration(milliseconds: 260),
-                              curve: Curves.easeInOut,
-                            );
-                          }
-                        : null,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-
-        // PageView
+        // PageView takes the central card space
         Expanded(
           child: PageView.builder(
             controller: _pageController,
@@ -489,7 +447,103 @@ class _CategoryScreenState extends State<CategoryScreen> {
             },
           ),
         ),
+
+        // Docked bottom controls: thumb-friendly stepper and navigation arrows
+        _buildBottomNavigationControls(provider, total, colors),
       ],
+    );
+  }
+
+  Widget _buildBottomNavigationControls(
+      AzkarProvider provider, int total, AppThemeColors colors) {
+    final bottomInset = MediaQuery.of(context).viewPadding.bottom;
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(16, 10, 16, 10 + bottomInset),
+      decoration: BoxDecoration(
+        color: colors.cardSurface,
+        border: Border(
+          top: BorderSide(color: colors.hairline),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: colors.shadowColor,
+            blurRadius: 10,
+            offset: const Offset(0, -3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Stepper indicator pill at bottom
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: colors.badgeGoldBg,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: colors.badgeGoldBorder),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.auto_stories_rounded,
+                  size: 14,
+                  color: colors.metallicGold,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'الذكر ${_currentPage + 1} من $total',
+                  style: TextStyle(
+                    color: colors.metallicGold,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Previous & Next navigation arrows docked at bottom for thumb ergonomics
+          Row(
+            textDirection: TextDirection.ltr,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back_ios_rounded, size: 18),
+                tooltip: 'الذكر التالي',
+                color: _currentPage < total - 1
+                    ? colors.textPrimary
+                    : colors.textTertiary,
+                onPressed: _currentPage < total - 1
+                    ? () {
+                        _pageController.nextPage(
+                          duration: const Duration(milliseconds: 260),
+                          curve: Curves.easeInOut,
+                        );
+                      }
+                    : null,
+              ),
+              const SizedBox(width: 4),
+              IconButton(
+                icon: const Icon(Icons.arrow_forward_ios_rounded, size: 18),
+                tooltip: 'الذكر السابق',
+                color: _currentPage > 0
+                    ? colors.textPrimary
+                    : colors.textTertiary,
+                onPressed: _currentPage > 0
+                    ? () {
+                        _pageController.previousPage(
+                          duration: const Duration(milliseconds: 260),
+                          curve: Curves.easeInOut,
+                        );
+                      }
+                    : null,
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

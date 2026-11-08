@@ -128,10 +128,15 @@ void main() {
     expect(
         AppTheme.darkTheme.colorScheme.tertiaryContainer, AppColors.badgeGoldBg);
     expect(AppTheme.darkTheme.scaffoldBackgroundColor, AppColors.pitchBlack);
+
+    // Light Theme tokens
+    expect(AppTheme.lightTheme.scaffoldBackgroundColor, const Color(0xFFF8F9FA));
+    expect(AppTheme.lightTheme.colorScheme.primary, const Color(0xFF1B5E20));
+    expect(AppTheme.lightTheme.colorScheme.tertiary, AppColors.metallicGold);
   });
 
   testWidgets(
-      'HomeScreen displays categories in 2-column grid and CategoryScreen has proper carousel arrows',
+      'HomeScreen displays categories in single-column vertical stack and CategoryScreen has bottom carousel arrows',
       (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
     final storage = StorageService(await SharedPreferences.getInstance());
@@ -146,16 +151,20 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // Verify AppBar action button for general notes exists
+    // Verify AppBar action buttons exist (theme toggle, general notes, about, reset)
+    expect(find.byTooltip('الوضع النهاري'), findsOneWidget);
     expect(find.byTooltip('تنبيهات عامة'), findsOneWidget);
 
-    // Verify categories are placed in a 2-column grid (same vertical Y coordinate)
+    // Verify categories are placed in a single-column vertical stack (Morning above Evening)
     final morningCenter = tester.getCenter(find.text('أذكار الصباح'));
     final eveningCenter = tester.getCenter(find.text('أذكار المساء'));
-    // Since they are arranged horizontally in a 2-column grid, their Y coordinates match closely
-    expect((morningCenter.dy - eveningCenter.dy).abs(), lessThan(5.0));
-    // And their X coordinates are distinct (side-by-side)
-    expect(morningCenter.dx, isNot(equals(eveningCenter.dx)));
+    expect(morningCenter.dy, lessThan(eveningCenter.dy));
+
+    // Verify Theme toggle on HomeScreen
+    await tester.tap(find.byTooltip('الوضع النهاري'));
+    await tester.pumpAndSettle();
+    expect(provider.isDarkMode, false);
+    expect(find.byTooltip('الوضع الليلي'), findsOneWidget);
 
     // Open category screen and switch to swipe mode
     await tester.tap(find.text('أذكار الصباح'));
@@ -168,6 +177,13 @@ void main() {
     expect(nextBtn, findsOneWidget);
     expect(prevBtn, findsOneWidget);
 
+    // Verify arrows are docked at the BOTTOM of the screen (below PageView center)
+    final pageViewCenter = tester.getCenter(find.byType(PageView));
+    final nextCenter = tester.getCenter(nextBtn);
+    final prevCenter = tester.getCenter(prevBtn);
+    expect(nextCenter.dy, greaterThan(pageViewCenter.dy));
+    expect(prevCenter.dy, greaterThan(pageViewCenter.dy));
+
     // Verify arrow icons
     final nextIcon = tester.widget<Icon>(find.descendant(of: nextBtn, matching: find.byType(Icon)));
     final prevIcon = tester.widget<Icon>(find.descendant(of: prevBtn, matching: find.byType(Icon)));
@@ -175,8 +191,6 @@ void main() {
     expect(prevIcon.icon, Icons.arrow_forward_ios_rounded);
 
     // Verify left/right positions: next is on the left (dx < prev dx) and points left
-    final nextCenter = tester.getCenter(nextBtn);
-    final prevCenter = tester.getCenter(prevBtn);
     expect(nextCenter.dx, lessThan(prevCenter.dx));
 
     // Tap next arrow and verify it advances to zikr 2
@@ -189,5 +203,12 @@ void main() {
     await tester.tap(prevBtn);
     await tester.pumpAndSettle();
     expect(find.textContaining('الذكر 1 من'), findsOneWidget);
+
+    // Toggle theme back to Dark mode from CategoryScreen
+    expect(find.byTooltip('الوضع الليلي'), findsOneWidget);
+    await tester.tap(find.byTooltip('الوضع الليلي'));
+    await tester.pumpAndSettle();
+    expect(provider.isDarkMode, true);
+    expect(find.byTooltip('الوضع النهاري'), findsOneWidget);
   });
 }
