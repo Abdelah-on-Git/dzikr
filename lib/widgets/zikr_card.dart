@@ -210,23 +210,23 @@ class _ZikrCardState extends State<ZikrCard>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppColors.badgeGreenBg,
+                      color: AppColors.badgeGoldBg,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.badgeGreenBorder),
+                      border: Border.all(color: AppColors.badgeGoldBorder),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.check_circle_rounded,
+                          Icons.star_rounded,
                           size: 12,
-                          color: AppColors.pitchGreen,
+                          color: AppColors.metallicGold,
                         ),
                         SizedBox(width: 4),
                         Text(
                           'مُكتمل',
                           style: TextStyle(
-                            color: AppColors.pitchGreen,
+                            color: AppColors.metallicGold,
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
                           ),
@@ -288,7 +288,7 @@ class _ZikrCardState extends State<ZikrCard>
                     child: Icon(
                       Icons.info_outline_rounded,
                       size: 16,
-                      color: AppColors.appleOrange,
+                      color: AppColors.metallicGold,
                     ),
                   ),
                   const SizedBox(width: 8),

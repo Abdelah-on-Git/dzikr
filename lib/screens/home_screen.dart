@@ -285,13 +285,13 @@ class HomeScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.badgeOrangeBg,
+                color: AppColors.badgeGoldBg,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.badgeOrangeBorder),
+                border: Border.all(color: AppColors.badgeGoldBorder),
               ),
               child: const Icon(
-                Icons.lightbulb_outline_rounded,
-                color: AppColors.appleOrange,
+                Icons.menu_book_rounded,
+                color: AppColors.metallicGold,
                 size: 22,
               ),
             ),
@@ -434,23 +434,23 @@ class HomeScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: AppColors.badgeGreenBg,
+                          color: AppColors.badgeGoldBg,
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.badgeGreenBorder),
+                          border: Border.all(color: AppColors.badgeGoldBorder),
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              Icons.check_circle_rounded,
+                              Icons.star_rounded,
                               size: 14,
-                              color: AppColors.pitchGreen,
+                              color: AppColors.metallicGold,
                             ),
                             SizedBox(width: 4),
                             Text(
                               'مكتمل',
                               style: TextStyle(
-                                color: AppColors.pitchGreen,
+                                color: AppColors.metallicGold,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -515,7 +515,7 @@ class HomeScreen extends StatelessWidget {
                       '${(progress * 100).toInt()}%',
                       style: TextStyle(
                         color: isCompleted
-                            ? AppColors.pitchGreen
+                            ? AppColors.metallicGold
                             : AppColors.textSecondary,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,

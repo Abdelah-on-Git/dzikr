@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:al_khulasah_al_hasna/main.dart';
 import 'package:al_khulasah_al_hasna/providers/azkar_provider.dart';
 import 'package:al_khulasah_al_hasna/services/storage_service.dart';
+import 'package:al_khulasah_al_hasna/theme/app_colors.dart';
+import 'package:al_khulasah_al_hasna/theme/app_theme.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -102,5 +104,29 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(ListView), findsOneWidget);
+  });
+
+  testWidgets(
+      '60-30-10 theme tokens and metallic gold accents are properly configured',
+      (WidgetTester tester) async {
+    // 60% Dominant (pitch black / surface)
+    expect(AppColors.pitchBlack, const Color(0xFF000000));
+    expect(AppColors.cardSurface, const Color(0xFF1C1C1E));
+
+    // 30% Secondary (emerald green)
+    expect(AppColors.pitchGreen, const Color(0xFF30D158));
+
+    // 10% Accent (metallic Islamic gold #D4AF37)
+    expect(AppColors.metallicGold, const Color(0xFFD4AF37));
+    expect(AppColors.accentGold, const Color(0xFFD4AF37));
+    expect(AppColors.badgeGoldBg, const Color(0x1FD4AF37));
+    expect(AppColors.badgeGoldBorder, const Color(0x40D4AF37));
+
+    // ColorScheme tokens in darkTheme
+    expect(AppTheme.darkTheme.colorScheme.primary, AppColors.pitchGreen);
+    expect(AppTheme.darkTheme.colorScheme.tertiary, AppColors.metallicGold);
+    expect(
+        AppTheme.darkTheme.colorScheme.tertiaryContainer, AppColors.badgeGoldBg);
+    expect(AppTheme.darkTheme.scaffoldBackgroundColor, AppColors.pitchBlack);
   });
 }

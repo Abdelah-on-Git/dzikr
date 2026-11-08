@@ -283,7 +283,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           '${(progress * 100).toInt()}%',
                           style: TextStyle(
                             color: isAllDone
-                                ? AppColors.pitchGreen
+                                ? AppColors.metallicGold
                                 : AppColors.textSecondary,
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -319,15 +319,15 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: AppColors.badgeGreenBg,
+                    color: AppColors.badgeGoldBg,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.badgeGreenBorder),
+                    border: Border.all(color: AppColors.badgeGoldBorder),
                   ),
                   child: const Row(
                     children: [
                       Icon(
-                        Icons.verified_rounded,
-                        color: AppColors.pitchGreen,
+                        Icons.star_rounded,
+                        color: AppColors.metallicGold,
                         size: 22,
                       ),
                       SizedBox(width: 10),
@@ -335,7 +335,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                         child: Text(
                           'تقبل الله طاعتكم، أتممت قراءة الأذكار كاملة!',
                           style: TextStyle(
-                            color: AppColors.pitchGreen,
+                            color: AppColors.metallicGold,
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),

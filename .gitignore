@@ -49,3 +49,4 @@ app.*.map.json
 
 # Prompt and private instructions
 SKILL.md
+devtools_options.yaml
