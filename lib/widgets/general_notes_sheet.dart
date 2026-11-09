@@ -29,7 +29,7 @@ class GeneralNotesSheet extends StatelessWidget {
 
     return SafeArea(
       top: false,
-      child: Padding(
+      child: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + bottomInset),
         child: Column(
           mainAxisSize: MainAxisSize.min,

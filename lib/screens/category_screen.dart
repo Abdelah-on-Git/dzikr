@@ -433,6 +433,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
               final isCompleted = provider.isCompleted(item);
 
               return SingleChildScrollView(
+                padding: const EdgeInsets.only(bottom: 20, top: 4),
                 child: ZikrCard(
                   key: ValueKey(item.id),
                   item: item,

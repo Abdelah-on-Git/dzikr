@@ -298,24 +298,24 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          Row(
-            children: [
-              Text(
-                'تأليف: الشيخ ',
-                style: TextStyle(
-                  color: colors.textSecondary,
-                  fontSize: 14,
-                ),
+          Text.rich(
+            TextSpan(
+              text: 'تأليف: الشيخ ',
+              style: TextStyle(
+                color: colors.textSecondary,
+                fontSize: 14,
               ),
-              Text(
-                author,
-                style: TextStyle(
-                  color: colors.metallicGold,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+              children: [
+                TextSpan(
+                  text: author,
+                  style: TextStyle(
+                    color: colors.metallicGold,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 16),
           // Integrated General Notes inside the Top Bar / Hero Box

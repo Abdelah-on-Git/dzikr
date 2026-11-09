@@ -355,10 +355,7 @@ class _ZikrCardState extends State<ZikrCard>
                                 widthFactor: progress,
                                 heightFactor: 1.0,
                                 child: Container(
-                                  color: (colors.isDark
-                                          ? Colors.white
-                                          : Colors.white)
-                                      .withValues(alpha: 0.22),
+                                  color: Colors.white.withValues(alpha: 0.22),
                                 ),
                               ),
                             ),

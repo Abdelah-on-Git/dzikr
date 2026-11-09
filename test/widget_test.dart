@@ -7,6 +7,7 @@ import 'package:al_khulasah_al_hasna/providers/azkar_provider.dart';
 import 'package:al_khulasah_al_hasna/services/storage_service.dart';
 import 'package:al_khulasah_al_hasna/theme/app_colors.dart';
 import 'package:al_khulasah_al_hasna/theme/app_theme.dart';
+import 'package:al_khulasah_al_hasna/widgets/about_sheet.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -210,5 +211,39 @@ void main() {
     await tester.pumpAndSettle();
     expect(provider.isDarkMode, true);
     expect(find.byTooltip('الوضع النهاري'), findsOneWidget);
+  });
+
+  testWidgets('About dialog displays logo and renders without overflow on narrow screen',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(320 * 2, 640 * 2);
+    tester.view.devicePixelRatio = 2.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    SharedPreferences.setMockInitialValues({});
+    final storage = StorageService(await SharedPreferences.getInstance());
+    final provider = AzkarProvider(storage);
+    await provider.loadData();
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [ChangeNotifierProvider.value(value: provider)],
+        child: const AlKhulasahApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify logo is rendered in Hero card on HomeScreen
+    final logoFinder = find.byType(Image);
+    expect(logoFinder, findsWidgets);
+
+    // Open About Dialog and verify logo appears in About sheet
+    await tester.tap(find.byTooltip('عن الكتاب'));
+    await tester.pumpAndSettle();
+
+    expect(find.descendant(of: find.byType(AboutSheet), matching: find.text('الخلاصة الحسناء في أذكار الصباح والمساء')), findsOneWidget);
+    expect(find.textContaining('العصيمي'), findsWidgets);
+
+    // Ensure no overflow errors occurred
+    expect(tester.takeException(), isNull);
   });
 }

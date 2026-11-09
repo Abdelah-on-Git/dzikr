@@ -32,7 +32,7 @@ class AboutSheet extends StatelessWidget {
 
     return SafeArea(
       top: false,
-      child: Padding(
+      child: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(20, 12, 20, 24 + bottomInset),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -92,25 +92,25 @@ class AboutSheet extends StatelessWidget {
             const SizedBox(height: 8),
 
             // Author
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'تأليف: الشيخ ',
-                  style: TextStyle(
-                    color: colors.textSecondary,
-                    fontSize: 15,
-                  ),
+            Text.rich(
+              TextSpan(
+                text: 'تأليف: الشيخ ',
+                style: TextStyle(
+                  color: colors.textSecondary,
+                  fontSize: 15,
                 ),
-                Text(
-                  author,
-                  style: TextStyle(
-                    color: colors.metallicGold,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
+                children: [
+                  TextSpan(
+                    text: author,
+                    style: TextStyle(
+                      color: colors.metallicGold,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
 
