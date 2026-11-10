@@ -35,11 +35,18 @@ class _CategoryScreenState extends State<CategoryScreen> {
     super.dispose();
   }
 
-  Future<void> _handleSwipeIncrement(
-      AzkarProvider provider, ZikrItem item, int index) async {
+  void _handleSwipeIncrement(
+      AzkarProvider provider, ZikrItem item, int index) {
     final prevCount = provider.getCount(item.id);
-    await provider.increment(item);
+    provider.increment(item);
     final newCount = provider.getCount(item.id);
+
+    // If an exceedable item was already at or above target count and the user taps again to add more,
+    // cancel any pending auto-advance so the recitation can continue uninterrupted.
+    if (provider.canExceedRepeatCount(item) && prevCount >= item.repeatCount) {
+      _autoAdvanceTimer?.cancel();
+      return;
+    }
 
     // Auto-advance in Carousel Mode:
     // Only triggers when the milestone is reached (transitioning from < repeatCount to >= repeatCount)
@@ -71,7 +78,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
       // Subtle haptic confirmation when auto-advancing
       HapticFeedback.lightImpact();
-      _pageController.nextPage(
+      _pageController.animateToPage(
+        index + 1,
         duration: const Duration(milliseconds: 260),
         curve: Curves.easeInOut,
       );
@@ -289,6 +297,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     ? 'عرض كقائمة'
                     : 'عرض كبطاقات متتابعة',
                 onPressed: () {
+                  _autoAdvanceTimer?.cancel();
                   HapticFeedback.selectionClick();
                   provider.toggleViewMode();
                 },
@@ -296,14 +305,18 @@ class _CategoryScreenState extends State<CategoryScreen> {
               IconButton(
                 icon: const Icon(Icons.format_size_rounded),
                 tooltip: 'حجم الخط',
-                onPressed: () =>
-                    _showFontSizeSheet(context, provider, colors),
+                onPressed: () {
+                  _autoAdvanceTimer?.cancel();
+                  _showFontSizeSheet(context, provider, colors);
+                },
               ),
               IconButton(
                 icon: const Icon(Icons.refresh_rounded),
                 tooltip: 'إعادة ضبط الكل',
-                onPressed: () =>
-                    _showResetConfirmDialog(context, provider, colors),
+                onPressed: () {
+                  _autoAdvanceTimer?.cancel();
+                  _showResetConfirmDialog(context, provider, colors);
+                },
               ),
               const SizedBox(width: 6),
             ],
@@ -467,41 +480,50 @@ class _CategoryScreenState extends State<CategoryScreen> {
       children: [
         // PageView takes the central card space
         Expanded(
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: total,
-            onPageChanged: (index) {
-              _autoAdvanceTimer?.cancel();
-              setState(() {
-                _currentPage = index;
-              });
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              if (notification is ScrollStartNotification &&
+                  notification.dragDetails != null) {
+                _autoAdvanceTimer?.cancel();
+              }
+              return false;
             },
-            itemBuilder: (context, index) {
-              final item = widget.category.items[index];
-              final currentCount = provider.getCount(item.id);
-              final isCompleted = provider.isCompleted(item);
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: total,
+              onPageChanged: (index) {
+                _autoAdvanceTimer?.cancel();
+                setState(() {
+                  _currentPage = index;
+                });
+              },
+              itemBuilder: (context, index) {
+                final item = widget.category.items[index];
+                final currentCount = provider.getCount(item.id);
+                final isCompleted = provider.isCompleted(item);
 
-              return SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 20, top: 4),
-                child: ZikrCard(
-                  key: ValueKey(item.id),
-                  item: item,
-                  currentCount: currentCount,
-                  isCompleted: isCompleted,
-                  fontScale: provider.fontScale,
-                  onIncrement: () =>
-                      _handleSwipeIncrement(provider, item, index),
-                  onDecrement: () {
-                    _autoAdvanceTimer?.cancel();
-                    provider.decrement(item);
-                  },
-                  onReset: () {
-                    _autoAdvanceTimer?.cancel();
-                    provider.resetZikr(item.id);
-                  },
-                ),
-              );
-            },
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: 20, top: 4),
+                  child: ZikrCard(
+                    key: ValueKey(item.id),
+                    item: item,
+                    currentCount: currentCount,
+                    isCompleted: isCompleted,
+                    fontScale: provider.fontScale,
+                    onIncrement: () =>
+                        _handleSwipeIncrement(provider, item, index),
+                    onDecrement: () {
+                      _autoAdvanceTimer?.cancel();
+                      provider.decrement(item);
+                    },
+                    onReset: () {
+                      _autoAdvanceTimer?.cancel();
+                      provider.resetZikr(item.id);
+                    },
+                  ),
+                );
+              },
+            ),
           ),
         ),
 

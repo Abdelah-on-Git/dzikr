@@ -279,5 +279,160 @@ void main() {
       expect(find.textContaining('الذكر 1 من 3'), findsOneWidget);
       expect(find.text('0 / 1'), findsOneWidget);
     });
+
+    testWidgets(
+        'Tapping to exceed (101) within the 300ms pause cancels auto-advance and stays on card',
+        (WidgetTester tester) async {
+      await provider.toggleViewMode();
+      final exceedItem = provider.book!.categories.first.items.firstWhere(
+        (it) => provider.canExceedRepeatCount(it),
+      );
+      final dummyNextItem = provider.book!.categories.first.items.firstWhere(
+        (it) => it.id != exceedItem.id,
+      );
+
+      final category = AzkarCategory(
+        categoryId: 'test_exceed_pause',
+        categoryName: 'تجربة الاستزادة أثناء الانتظار',
+        timeWindow: 'وقت',
+        items: [exceedItem, dummyNextItem],
+      );
+
+      // Pre-set count to 99
+      await storage.setCount(exceedItem.id, 99);
+      await provider.loadData();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ChangeNotifierProvider<AzkarProvider>.value(
+            value: provider,
+            child: CategoryScreen(category: category),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('الذكر 1 من 2'), findsOneWidget);
+      expect(find.text('99 / 100'), findsOneWidget);
+
+      // Tap 1: reaches 100 (milestone)
+      await tester.tap(find.text('99 / 100'));
+      await tester.pump();
+      expect(find.text('تم الإنجاز (100 / 100)'), findsOneWidget);
+
+      // Before the 300ms pause expires (at 100ms), user taps again to exceed to 101
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.tap(find.text('تم الإنجاز (100 / 100)'));
+      await tester.pump();
+      expect(find.text('تم الإنجاز (101 / 100)'), findsOneWidget);
+
+      // Wait past 300ms (e.g. 400ms)
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pumpAndSettle();
+
+      // Card must NOT auto-advance; it stays on Card 1!
+      expect(find.textContaining('الذكر 1 من 2'), findsOneWidget);
+      expect(find.text('تم الإنجاز (101 / 100)'), findsOneWidget);
+    });
+
+    testWidgets(
+        'Manual touch drag during 300ms pause cancels auto-advance',
+        (WidgetTester tester) async {
+      await provider.toggleViewMode();
+      final category = AzkarCategory(
+        categoryId: 'test_drag_cancel',
+        categoryName: 'تجربة السحب اليدوي',
+        timeWindow: 'وقت',
+        items: [
+          provider.book!.categories.first.items[0],
+          provider.book!.categories.first.items[1],
+        ],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ChangeNotifierProvider<AzkarProvider>.value(
+            value: provider,
+            child: CategoryScreen(category: category),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('الذكر 1 من 2'), findsOneWidget);
+
+      // Tap to complete item 1 (0/1 -> 1/1)
+      await tester.tap(find.text('0 / 1'));
+      await tester.pump();
+      expect(find.text('تم الإنجاز (1 / 1)'), findsOneWidget);
+
+      // At 100ms, user starts dragging the card slightly (drag gesture)
+      await tester.pump(const Duration(milliseconds: 100));
+      final gesture = await tester.startGesture(const Offset(200, 300));
+      await gesture.moveBy(const Offset(20, 0)); // small touch drag
+      await tester.pump();
+
+      // Wait past the original 300ms pause while still touching
+      await tester.pump(const Duration(milliseconds: 300));
+      // Release gesture back without switching page
+      await gesture.moveBy(const Offset(-20, 0));
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      // Auto-advance was cancelled by manual drag; stays on Card 1
+      expect(find.textContaining('الذكر 1 من 2'), findsOneWidget);
+    });
+
+    testWidgets(
+        'Toggling view mode during 300ms pause cancels auto-advance cleanly',
+        (WidgetTester tester) async {
+      await provider.toggleViewMode();
+      final category = AzkarCategory(
+        categoryId: 'test_toggle_view',
+        categoryName: 'تجربة تبديل العرض',
+        timeWindow: 'وقت',
+        items: [
+          provider.book!.categories.first.items[0],
+          provider.book!.categories.first.items[1],
+        ],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ChangeNotifierProvider<AzkarProvider>.value(
+            value: provider,
+            child: CategoryScreen(category: category),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('الذكر 1 من 2'), findsOneWidget);
+
+      // Tap to complete item 1
+      await tester.tap(find.text('0 / 1'));
+      await tester.pump();
+
+      // At 100ms, user toggles view mode
+      await tester.pump(const Duration(milliseconds: 100));
+      final toggleBtn = find.byTooltip('عرض كقائمة');
+      await tester.tap(toggleBtn);
+      await tester.pumpAndSettle();
+
+      // In list mode now
+      expect(provider.isSwipeMode, isFalse);
+
+      // Wait past 300ms
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pumpAndSettle();
+
+      // Switch back to swipe mode
+      final switchBackBtn = find.byTooltip('عرض كبطاقات متتابعة');
+      await tester.tap(switchBackBtn);
+      await tester.pumpAndSettle();
+
+      // Should still be on Card 1 (not auto-advanced to 2)
+      expect(find.textContaining('الذكر 1 من 2'), findsOneWidget);
+    });
   });
 }
