@@ -1,17 +1,25 @@
-# al_khulasah_al_hasna
+# الخلاصة الحسناء في أذكار الصباح والمساء (Al-Khulasah Al-Hasna)
 
-A new Flutter project.
+تطبيق أندرويد إسلامي مبني باستخدام Flutter، مخصص لأذكار الصباح والمساء استناداً إلى كتاب:
+> **«الخلاصة الحسناء في أذكار الصباح والمساء»**  
+> لفضيلة الشيخ **د. صالح بن عبد الله بن حمد العصيمي** حفظه الله.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 📱 المميزات الرئيسية (Key Features)
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- **دقة علمية وتوثيق شرعي:** نصوص الأذكار مستقاة بالكامل من الكتاب مع بيان الأوقات الشرعية والتنبيهات المنهجية للمصنف.
+- **عداد تفاعلي ذكي (Interactive Counter):** 
+  - مساحة نقر عريضة مع شريط تقدم سلس يدعم اتجاه اليمين إلى اليسار (RTL).
+  - اهتزاز لمسي خفيف (Haptic Feedback) عند كل تسبيحة واهتزاز تأكيد عند إتمام الورد.
+  - مرونة للأذكار المأذون شرعاً بالزيادة فيها (مثل أذكار المئة "وتزيد ما شئت").
+- **نمطان للعرض (Two Reading Modes):**
+  - **عرض القائمة (List View):** لقراءة سريعة لجميع الأذكار مع مؤشرات الإنجاز.
+  - **عرض البطاقات المتتابعة (Card-Swipe Carousel):** تمرير بطاقة تلو الأخرى مع أزرار ملاحة سفلية تحت إبهام اليد ومؤشر خطوات تفاعلي.
+- **التصميم وتناغم الألوان (60-30-10 Design Law):**
+  - **60% الأساس:** أسود ملكي OLED داكن (`#000000`) وأسطح راقية (`#1C1C1E`) لتوفير طاقة البطارية وراحة العين.
+  - **30% الهوية والعمليات:** أخضر زمردي نبوي (`#30D158`).
+  - **10% اللمسات الذهبية:** ذهبي إسلامي (`#D4AF37`) لوسام الإنجاز وعدد التكرار والنجوم التقديرية.
+- **دعم الوضعين الليلي والنهاري (Dark & Day Mode):** تبديل فوري بزر شمس/قمر وحفظ تلقائي للتفضيل.
+- **تصفير يومي تلقائي (Daily Auto-Reset):** يعاد تصفير العدادات تلقائياً مع إشراقة كل يوم جديد.
+- **يعمل بالكامل دون إنترنت (100% Offline):** البيانات مدمجة محلياً بصيغة JSON.
