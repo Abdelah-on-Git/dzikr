@@ -23,3 +23,55 @@
 - **دعم الوضعين الليلي والنهاري (Dark & Day Mode):** تبديل فوري بزر شمس/قمر وحفظ تلقائي للتفضيل.
 - **تصفير يومي تلقائي (Daily Auto-Reset):** يعاد تصفير العدادات تلقائياً مع إشراقة كل يوم جديد.
 - **يعمل بالكامل دون إنترنت (100% Offline):** البيانات مدمجة محلياً بصيغة JSON.
+
+---
+
+## 🏗️ معمارية التطبيق (Architecture)
+
+تم بناء التطبيق بهندسة واضحة وبسيطة دون تعقيد برمجي زائد:
+```text
+lib/
+├── data/          # مستودع قراءة وتحميل بيانات الأذكار (JSON)
+├── models/        # نماذج البيانات (Book, Category, ZikrItem)
+├── providers/     # إدارة الحالة عبر Provider والتفاعل الفوري
+├── screens/       # شاشات التطبيق (Home, Category & Counter)
+├── services/      # التخزين المحلي عبر SharedPreferences
+├── theme/         # ألوان وهوية التطبيق وقواعد 60-30-10
+└── widgets/       # بطاقات الأذكار، النوافذ العائمة، ومكونات الواجهة
+```
+
+---
+
+## 🛠️ البناء والتثبيت (Build & Installation)
+
+### 1. المتطلبات (Prerequisites)
+- Flutter SDK (3.13+)
+- Android SDK مع أداة `cmdline-tools`
+- مسار Gradle محدّث
+
+### 2. تشغيل الاختبارات وفحص الكود (Testing & Linting)
+```bash
+# تشغيل جميع اختبارات الـ Unit والـ Widget
+flutter test
+
+# التحقق من خلو المشروع من التحذيرات البرمجية
+flutter analyze
+```
+
+### 3. بناء ملفات APK الإنتاجية (Production Builds)
+
+**بناء نسخة قياسية (Universal APK):**
+```bash
+flutter build apk --release
+```
+
+**بناء نسخ محسنة مع تقليل الحجم والتشفير (Split per ABI & Obfuscation):**
+```bash
+flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/symbols
+```
+> تُقلل هذه الطريقة حجم ملف الـ APK بأكثر من 65% (حوالي 16 ميجابايت بدلاً من 48 ميجابايت لأجهزة `arm64-v8a`).
+
+---
+
+## 📄 الترخيص (License)
+هذا المشروع متاح لوجه الله تعالى ونشر العلم النافع.
