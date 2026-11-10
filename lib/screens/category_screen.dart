@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../models/azkar_category.dart';
+import '../models/zikr_item.dart';
 import '../providers/azkar_provider.dart';
 import '../theme/app_colors.dart';
 import '../widgets/zikr_card.dart';
@@ -18,6 +20,7 @@ class CategoryScreen extends StatefulWidget {
 class _CategoryScreenState extends State<CategoryScreen> {
   late PageController _pageController;
   int _currentPage = 0;
+  Timer? _autoAdvanceTimer;
 
   @override
   void initState() {
@@ -27,8 +30,52 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
   @override
   void dispose() {
+    _autoAdvanceTimer?.cancel();
     _pageController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleSwipeIncrement(
+      AzkarProvider provider, ZikrItem item, int index) async {
+    final prevCount = provider.getCount(item.id);
+    await provider.increment(item);
+    final newCount = provider.getCount(item.id);
+
+    // Auto-advance in Carousel Mode:
+    // Only triggers when the milestone is reached (transitioning from < repeatCount to >= repeatCount)
+    if (prevCount < item.repeatCount && newCount >= item.repeatCount) {
+      _triggerAutoAdvance(index);
+    }
+  }
+
+  void _triggerAutoAdvance(int index) {
+    final total = widget.category.items.length;
+    // Condition 1: If on the last card, do not attempt to swipe past the end.
+    if (index >= total - 1) return;
+
+    _autoAdvanceTimer?.cancel();
+    _autoAdvanceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      if (!_pageController.hasClients) return;
+      // Ensure the user is still on this card and hasn't manually swiped away
+      if (_currentPage != index) return;
+      if (_currentPage >= total - 1) return;
+
+      final provider = Provider.of<AzkarProvider>(context, listen: false);
+      if (!provider.isSwipeMode) return;
+      // Ensure the item is still completed (not reset or decremented during delay)
+      if (provider.getCount(widget.category.items[index].id) <
+          widget.category.items[index].repeatCount) {
+        return;
+      }
+
+      // Subtle haptic confirmation when auto-advancing
+      HapticFeedback.lightImpact();
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeInOut,
+      );
+    });
   }
 
   void _showResetConfirmDialog(
@@ -72,6 +119,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
               ),
             ),
             onPressed: () {
+              _autoAdvanceTimer?.cancel();
               provider.resetCategory(widget.category);
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -423,6 +471,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
             controller: _pageController,
             itemCount: total,
             onPageChanged: (index) {
+              _autoAdvanceTimer?.cancel();
               setState(() {
                 _currentPage = index;
               });
@@ -440,9 +489,16 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   currentCount: currentCount,
                   isCompleted: isCompleted,
                   fontScale: provider.fontScale,
-                  onIncrement: () => provider.increment(item),
-                  onDecrement: () => provider.decrement(item),
-                  onReset: () => provider.resetZikr(item.id),
+                  onIncrement: () =>
+                      _handleSwipeIncrement(provider, item, index),
+                  onDecrement: () {
+                    _autoAdvanceTimer?.cancel();
+                    provider.decrement(item);
+                  },
+                  onReset: () {
+                    _autoAdvanceTimer?.cancel();
+                    provider.resetZikr(item.id);
+                  },
                 ),
               );
             },
@@ -518,6 +574,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     : colors.textTertiary,
                 onPressed: _currentPage < total - 1
                     ? () {
+                        _autoAdvanceTimer?.cancel();
                         _pageController.nextPage(
                           duration: const Duration(milliseconds: 260),
                           curve: Curves.easeInOut,
@@ -534,6 +591,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     : colors.textTertiary,
                 onPressed: _currentPage > 0
                     ? () {
+                        _autoAdvanceTimer?.cancel();
                         _pageController.previousPage(
                           duration: const Duration(milliseconds: 260),
                           curve: Curves.easeInOut,
