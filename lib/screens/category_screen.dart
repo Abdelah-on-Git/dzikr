@@ -536,6 +536,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
   Widget _buildBottomNavigationControls(
       AzkarProvider provider, int total, AppThemeColors colors) {
     final bottomInset = MediaQuery.of(context).viewPadding.bottom;
+    final isNextEnabled = _currentPage < total - 1;
+    final isPrevEnabled = _currentPage > 0;
 
     return Container(
       padding: EdgeInsets.fromLTRB(16, 10, 16, 10 + bottomInset),
@@ -553,11 +555,32 @@ class _CategoryScreenState extends State<CategoryScreen> {
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
+        textDirection: TextDirection.ltr,
         children: [
-          // Stepper indicator pill at bottom
+          // Next arrow (advances to next zikr toward left in RTL)
+          _buildNavArrowButton(
+            icon: Icons.arrow_back_ios_rounded,
+            tooltip: 'الذكر التالي',
+            isEnabled: isNextEnabled,
+            colors: colors,
+            onPressed: isNextEnabled
+                ? () {
+                    HapticFeedback.selectionClick();
+                    _autoAdvanceTimer?.cancel();
+                    _pageController.nextPage(
+                      duration: const Duration(milliseconds: 260),
+                      curve: Curves.easeInOut,
+                    );
+                  }
+                : null,
+          ),
+
+          const SizedBox(width: 12),
+
+          // Stepper indicator pill at bottom center
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: colors.badgeGoldBg,
               borderRadius: BorderRadius.circular(10),
@@ -568,10 +591,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
               children: [
                 Icon(
                   Icons.auto_stories_rounded,
-                  size: 14,
+                  size: 15,
                   color: colors.metallicGold,
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 7),
                 Text(
                   'الذكر ${_currentPage + 1} من $total',
                   style: TextStyle(
@@ -584,46 +607,66 @@ class _CategoryScreenState extends State<CategoryScreen> {
             ),
           ),
 
-          // Previous & Next navigation arrows docked at bottom for thumb ergonomics
-          Row(
-            textDirection: TextDirection.ltr,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back_ios_rounded, size: 18),
-                tooltip: 'الذكر التالي',
-                color: _currentPage < total - 1
-                    ? colors.textPrimary
-                    : colors.textTertiary,
-                onPressed: _currentPage < total - 1
-                    ? () {
-                        _autoAdvanceTimer?.cancel();
-                        _pageController.nextPage(
-                          duration: const Duration(milliseconds: 260),
-                          curve: Curves.easeInOut,
-                        );
-                      }
-                    : null,
-              ),
-              const SizedBox(width: 4),
-              IconButton(
-                icon: const Icon(Icons.arrow_forward_ios_rounded, size: 18),
-                tooltip: 'الذكر السابق',
-                color: _currentPage > 0
-                    ? colors.textPrimary
-                    : colors.textTertiary,
-                onPressed: _currentPage > 0
-                    ? () {
-                        _autoAdvanceTimer?.cancel();
-                        _pageController.previousPage(
-                          duration: const Duration(milliseconds: 260),
-                          curve: Curves.easeInOut,
-                        );
-                      }
-                    : null,
-              ),
-            ],
+          const SizedBox(width: 12),
+
+          // Previous arrow (returns to previous zikr toward right in RTL)
+          _buildNavArrowButton(
+            icon: Icons.arrow_forward_ios_rounded,
+            tooltip: 'الذكر السابق',
+            isEnabled: isPrevEnabled,
+            colors: colors,
+            onPressed: isPrevEnabled
+                ? () {
+                    HapticFeedback.selectionClick();
+                    _autoAdvanceTimer?.cancel();
+                    _pageController.previousPage(
+                      duration: const Duration(milliseconds: 260),
+                      curve: Curves.easeInOut,
+                    );
+                  }
+                : null,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildNavArrowButton({
+    required IconData icon,
+    required String tooltip,
+    required bool isEnabled,
+    required AppThemeColors colors,
+    required VoidCallback? onPressed,
+  }) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: isEnabled
+            ? colors.surface
+            : colors.surface.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isEnabled
+              ? colors.hairline
+              : colors.hairline.withValues(alpha: 0.4),
+        ),
+      ),
+      child: IconButton(
+        icon: Icon(icon, size: 18),
+        tooltip: tooltip,
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(
+          minWidth: 40,
+          minHeight: 40,
+          maxWidth: 40,
+          maxHeight: 40,
+        ),
+        color: isEnabled
+            ? colors.textPrimary
+            : colors.textTertiary.withValues(alpha: 0.4),
+        disabledColor: colors.textTertiary.withValues(alpha: 0.4),
+        onPressed: onPressed,
       ),
     );
   }

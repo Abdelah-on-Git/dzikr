@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:al_khulasah_al_hasna/main.dart';
 import 'package:al_khulasah_al_hasna/providers/azkar_provider.dart';
+import 'package:al_khulasah_al_hasna/screens/category_screen.dart';
 import 'package:al_khulasah_al_hasna/services/storage_service.dart';
 import 'package:al_khulasah_al_hasna/theme/app_colors.dart';
 import 'package:al_khulasah_al_hasna/theme/app_theme.dart';
@@ -193,6 +194,35 @@ void main() {
 
     // Verify left/right positions: next is on the left (dx < prev dx) and points left
     expect(nextCenter.dx, lessThan(prevCenter.dx));
+
+    // Verify stepper pill and navigation unit are centered at the bottom of the screen
+    final pillFinder = find.ancestor(
+      of: find.textContaining('الذكر 1 من'),
+      matching: find.byType(Container),
+    ).first;
+    final pillCenter = tester.getCenter(pillFinder);
+    final screenWidth = tester.getSize(find.byType(CategoryScreen)).width;
+    expect(pillCenter.dx, closeTo(screenWidth / 2, 4.0));
+
+    // Verify arrows flank the stepper pill nicely in RTL navigation order
+    expect(nextCenter.dx, lessThan(pillCenter.dx));
+    expect(pillCenter.dx, lessThan(prevCenter.dx));
+
+    // Verify arrows and pill are centered symmetrically
+    expect((nextCenter.dx + prevCenter.dx) / 2, closeTo(screenWidth / 2, 4.0));
+
+    // Verify arrows are grouped directly next to the stepper pill at bottom center
+    expect((pillCenter.dx - nextCenter.dx), lessThan(160.0));
+    expect((prevCenter.dx - pillCenter.dx), lessThan(160.0));
+
+    // Verify arrow vertical alignment matches the stepper pill
+    expect(nextCenter.dy, closeTo(pillCenter.dy, 4.0));
+    expect(prevCenter.dy, closeTo(pillCenter.dy, 4.0));
+
+    // Verify balanced button dimensions (40x40 touch target)
+    final nextSize = tester.getSize(nextBtn);
+    expect(nextSize.width, closeTo(40.0, 4.0));
+    expect(nextSize.height, closeTo(40.0, 4.0));
 
     // Tap next arrow and verify it advances to zikr 2
     expect(find.textContaining('الذكر 1 من'), findsOneWidget);

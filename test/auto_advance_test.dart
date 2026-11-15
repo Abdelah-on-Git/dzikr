@@ -434,5 +434,60 @@ void main() {
       // Should still be on Card 1 (not auto-advanced to 2)
       expect(find.textContaining('الذكر 1 من 2'), findsOneWidget);
     });
+
+    testWidgets(
+        'Tapping next or previous navigation arrow cancels pending auto-advance timer',
+        (WidgetTester tester) async {
+      await provider.toggleViewMode();
+      final category = AzkarCategory(
+        categoryId: 'test_arrow_cancel',
+        categoryName: 'تجربة أسهم التنقل',
+        timeWindow: 'وقت',
+        items: [
+          provider.book!.categories.first.items[0],
+          provider.book!.categories.first.items[1],
+          provider.book!.categories.first.items[2],
+        ],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ChangeNotifierProvider<AzkarProvider>.value(
+            value: provider,
+            child: CategoryScreen(category: category),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('الذكر 1 من 3'), findsOneWidget);
+
+      // Tap to complete item 1 (0/1 -> 1/1)
+      await tester.tap(find.text('0 / 1'));
+      await tester.pump();
+      expect(find.text('تم الإنجاز (1 / 1)'), findsOneWidget);
+
+      // At 100ms (during the 300ms pause), user taps the next arrow button manually
+      await tester.pump(const Duration(milliseconds: 100));
+      final nextBtn = find.byTooltip('الذكر التالي');
+      await tester.tap(nextBtn);
+      await tester.pumpAndSettle();
+
+      // Card advanced to card 2 immediately via arrow
+      expect(find.textContaining('الذكر 2 من 3'), findsOneWidget);
+
+      // Wait past the original auto-advance timer to ensure it was cancelled (no double jump to card 3)
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pumpAndSettle();
+
+      // Must cleanly remain on Card 2
+      expect(find.textContaining('الذكر 2 من 3'), findsOneWidget);
+
+      // Tap previous arrow to navigate back to card 1
+      final prevBtn = find.byTooltip('الذكر السابق');
+      await tester.tap(prevBtn);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('الذكر 1 من 3'), findsOneWidget);
+    });
   });
 }
