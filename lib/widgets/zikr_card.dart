@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/zikr_item.dart';
 import '../theme/app_colors.dart';
+import 'circular_counter_button.dart';
 
-class ZikrCard extends StatefulWidget {
+class ZikrCard extends StatelessWidget {
   final ZikrItem item;
   final int currentCount;
   final bool isCompleted;
@@ -11,6 +12,7 @@ class ZikrCard extends StatefulWidget {
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
   final VoidCallback onReset;
+  final bool isCarouselMode;
 
   const ZikrCard({
     super.key,
@@ -21,52 +23,11 @@ class ZikrCard extends StatefulWidget {
     required this.onIncrement,
     required this.onDecrement,
     required this.onReset,
+    this.isCarouselMode = false,
   });
 
-  @override
-  State<ZikrCard> createState() => _ZikrCardState();
-}
-
-class _ZikrCardState extends State<ZikrCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _pressController;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _pressController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 90),
-      lowerBound: 0.0,
-      upperBound: 1.0,
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
-      CurvedAnimation(parent: _pressController, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _pressController.dispose();
-    super.dispose();
-  }
-
-  void _onTapDown(TapDownDetails _) {
-    _pressController.forward();
-  }
-
-  void _onTapUp(TapUpDetails _) {
-    _pressController.reverse();
-    widget.onIncrement();
-  }
-
-  void _onTapCancel() {
-    _pressController.reverse();
-  }
-
   void _copyText(BuildContext context, AppThemeColors colors) {
-    Clipboard.setData(ClipboardData(text: widget.item.text));
+    Clipboard.setData(ClipboardData(text: item.text));
     HapticFeedback.selectionClick();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -85,8 +46,8 @@ class _ZikrCardState extends State<ZikrCard>
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final progress = (widget.item.repeatCount > 0)
-        ? (widget.currentCount / widget.item.repeatCount).clamp(0.0, 1.0)
+    final progress = (item.repeatCount > 0)
+        ? (currentCount / item.repeatCount).clamp(0.0, 1.0)
         : 0.0;
 
     return Container(
@@ -95,12 +56,12 @@ class _ZikrCardState extends State<ZikrCard>
         color: colors.cardSurface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: widget.isCompleted
+          color: isCompleted
               ? colors.accentGreen.withValues(alpha: 0.45)
               : colors.hairline,
-          width: widget.isCompleted ? 1.5 : 1.0,
+          width: isCompleted ? 1.5 : 1.0,
         ),
-        boxShadow: widget.isCompleted
+        boxShadow: isCompleted
             ? [
                 BoxShadow(
                   color: colors.greenGlow.withValues(alpha: 0.18),
@@ -143,7 +104,7 @@ class _ZikrCardState extends State<ZikrCard>
                       ),
                       const SizedBox(width: 5),
                       Text(
-                        widget.item.repeatText,
+                        item.repeatText,
                         style: TextStyle(
                           color: colors.metallicGold,
                           fontSize: 12,
@@ -167,12 +128,12 @@ class _ZikrCardState extends State<ZikrCard>
                         strokeWidth: 2.8,
                         backgroundColor: colors.surface,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          widget.isCompleted
+                          isCompleted
                               ? colors.metallicGold
                               : colors.accentGreen.withValues(alpha: 0.85),
                         ),
                       ),
-                      if (widget.isCompleted)
+                      if (isCompleted)
                         Icon(
                           Icons.star_rounded,
                           size: 13,
@@ -185,7 +146,7 @@ class _ZikrCardState extends State<ZikrCard>
                 const Spacer(),
 
                 // Decrement action (subtle header control)
-                if (widget.currentCount > 0)
+                if (currentCount > 0)
                   IconButton(
                     icon: Icon(
                       Icons.remove_circle_outline_rounded,
@@ -193,12 +154,12 @@ class _ZikrCardState extends State<ZikrCard>
                       color: colors.textSecondary,
                     ),
                     tooltip: 'إنقاص',
-                    onPressed: widget.onDecrement,
+                    onPressed: onDecrement,
                     visualDensity: VisualDensity.compact,
                   ),
 
                 // Reset action (subtle header control)
-                if (widget.currentCount > 0)
+                if (currentCount > 0)
                   IconButton(
                     icon: Icon(
                       Icons.replay_rounded,
@@ -206,12 +167,12 @@ class _ZikrCardState extends State<ZikrCard>
                       color: colors.textTertiary,
                     ),
                     tooltip: 'إعادة التعيين',
-                    onPressed: widget.onReset,
+                    onPressed: onReset,
                     visualDensity: VisualDensity.compact,
                   ),
 
                 // Completed Badge
-                if (widget.isCompleted)
+                if (isCompleted)
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     padding:
@@ -260,15 +221,15 @@ class _ZikrCardState extends State<ZikrCard>
           // Main Arabic Zikr Text (Large interactive tap area)
           GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: widget.onIncrement,
+            onTap: onIncrement,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               child: Text(
-                widget.item.text,
+                item.text,
                 textAlign: TextAlign.right,
                 style: TextStyle(
                   color: colors.textPrimary,
-                  fontSize: 19 * widget.fontScale,
+                  fontSize: 19 * fontScale,
                   height: 1.85,
                   fontWeight: FontWeight.w400,
                   letterSpacing: 0.1,
@@ -278,7 +239,7 @@ class _ZikrCardState extends State<ZikrCard>
           ),
 
           // Note Section (if present)
-          if (widget.item.note != null)
+          if (item.note != null)
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -301,7 +262,7 @@ class _ZikrCardState extends State<ZikrCard>
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      widget.item.note!,
+                      item.note!,
                       style: TextStyle(
                         color: colors.textSecondary,
                         fontSize: 13,
@@ -313,91 +274,23 @@ class _ZikrCardState extends State<ZikrCard>
               ),
             ),
 
-          const SizedBox(height: 6),
-
-          // Primary Action Counter Button (Full width, Apple style, no jumping)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: GestureDetector(
-                onTapDown: _onTapDown,
-                onTapUp: _onTapUp,
-                onTapCancel: _onTapCancel,
-                child: Container(
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: widget.isCompleted
-                        ? colors.elevatedSurface
-                        : colors.accentGreen,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: widget.isCompleted
-                        ? null
-                        : [
-                            BoxShadow(
-                              color: colors.greenGlow.withValues(alpha: 0.3),
-                              blurRadius: 16,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // RTL-aware subtle progress fill inside button
-                        if (!widget.isCompleted && progress > 0)
-                          Positioned.fill(
-                            child: Align(
-                              alignment: AlignmentDirectional.centerStart,
-                              child: FractionallySizedBox(
-                                widthFactor: progress,
-                                heightFactor: 1.0,
-                                child: Container(
-                                  color: Colors.white.withValues(alpha: 0.22),
-                                ),
-                              ),
-                            ),
-                          ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              widget.isCompleted
-                                  ? Icons.check_circle_rounded
-                                  : Icons.touch_app_rounded,
-                              color: widget.isCompleted
-                                  ? colors.accentGreen
-                                  : (colors.isDark
-                                      ? AppColors.pitchBlack
-                                      : Colors.white),
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              widget.isCompleted
-                                  ? 'تم الإنجاز (${widget.currentCount} / ${widget.item.repeatCount})'
-                                  : '${widget.currentCount} / ${widget.item.repeatCount}',
-                              style: TextStyle(
-                                color: widget.isCompleted
-                                    ? colors.textPrimary
-                                    : (colors.isDark
-                                        ? AppColors.pitchBlack
-                                        : Colors.white),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+          // In List Mode: Render circular counter button centered at bottom of card
+          if (!isCarouselMode) ...[
+            const SizedBox(height: 6),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+              child: Center(
+                child: CircularCounterButton(
+                  currentCount: currentCount,
+                  repeatCount: item.repeatCount,
+                  isCompleted: isCompleted,
+                  onTap: onIncrement,
                 ),
               ),
             ),
-          ),
+          ] else ...[
+            const SizedBox(height: 10),
+          ],
         ],
       ),
     );

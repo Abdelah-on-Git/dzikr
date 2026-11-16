@@ -195,29 +195,26 @@ void main() {
     // Verify left/right positions: next is on the left (dx < prev dx) and points left
     expect(nextCenter.dx, lessThan(prevCenter.dx));
 
-    // Verify stepper pill and navigation unit are centered at the bottom of the screen
-    final pillFinder = find.ancestor(
-      of: find.textContaining('الذكر 1 من'),
-      matching: find.byType(Container),
-    ).first;
-    final pillCenter = tester.getCenter(pillFinder);
+    // Verify circular counter button is centered below the zikr card and flanked by navigation arrows
+    final counterFinder = find.text('0 / 1').first;
+    final counterCenter = tester.getCenter(counterFinder);
     final screenWidth = tester.getSize(find.byType(CategoryScreen)).width;
-    expect(pillCenter.dx, closeTo(screenWidth / 2, 4.0));
+    expect(counterCenter.dx, closeTo(screenWidth / 2, 4.0));
 
-    // Verify arrows flank the stepper pill nicely in RTL navigation order
-    expect(nextCenter.dx, lessThan(pillCenter.dx));
-    expect(pillCenter.dx, lessThan(prevCenter.dx));
+    // Verify arrows flank the circular counter button nicely in RTL navigation order
+    expect(nextCenter.dx, lessThan(counterCenter.dx));
+    expect(counterCenter.dx, lessThan(prevCenter.dx));
 
-    // Verify arrows and pill are centered symmetrically
+    // Verify arrows and counter are centered symmetrically
     expect((nextCenter.dx + prevCenter.dx) / 2, closeTo(screenWidth / 2, 4.0));
 
-    // Verify arrows are grouped directly next to the stepper pill at bottom center
-    expect((pillCenter.dx - nextCenter.dx), lessThan(160.0));
-    expect((prevCenter.dx - pillCenter.dx), lessThan(160.0));
+    // Verify arrows are grouped directly next to the circular counter button
+    expect((counterCenter.dx - nextCenter.dx), lessThan(160.0));
+    expect((prevCenter.dx - counterCenter.dx), lessThan(160.0));
 
-    // Verify arrow vertical alignment matches the stepper pill
-    expect(nextCenter.dy, closeTo(pillCenter.dy, 4.0));
-    expect(prevCenter.dy, closeTo(pillCenter.dy, 4.0));
+    // Verify arrow vertical alignment matches the circular counter button
+    expect(nextCenter.dy, closeTo(counterCenter.dy, 4.0));
+    expect(prevCenter.dy, closeTo(counterCenter.dy, 4.0));
 
     // Verify balanced button dimensions (40x40 touch target)
     final nextSize = tester.getSize(nextBtn);

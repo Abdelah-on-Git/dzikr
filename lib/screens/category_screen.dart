@@ -6,6 +6,7 @@ import '../models/azkar_category.dart';
 import '../models/zikr_item.dart';
 import '../providers/azkar_provider.dart';
 import '../theme/app_colors.dart';
+import '../widgets/circular_counter_button.dart';
 import '../widgets/zikr_card.dart';
 
 class CategoryScreen extends StatefulWidget {
@@ -437,6 +438,42 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   ),
                 ),
 
+              // Stepper badge in swipe/carousel mode (above the cards)
+              if (provider.isSwipeMode)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: colors.badgeGoldBg,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: colors.badgeGoldBorder),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.auto_stories_rounded,
+                            size: 14,
+                            color: colors.metallicGold,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'الذكر ${_currentPage + 1} من $totalCount',
+                            style: TextStyle(
+                              color: colors.metallicGold,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
               // Zikr Cards View (List or Card-Swipe)
               Expanded(
                 child: provider.isSwipeMode
@@ -468,6 +505,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
           onIncrement: () => provider.increment(item),
           onDecrement: () => provider.decrement(item),
           onReset: () => provider.resetZikr(item.id),
+          isCarouselMode: false,
         );
       },
     );
@@ -476,84 +514,83 @@ class _CategoryScreenState extends State<CategoryScreen> {
   Widget _buildSwipeView(AzkarProvider provider, AppThemeColors colors) {
     final total = widget.category.items.length;
 
-    return Column(
-      children: [
-        // PageView takes the central card space
-        Expanded(
-          child: NotificationListener<ScrollNotification>(
-            onNotification: (notification) {
-              if (notification is ScrollStartNotification &&
-                  notification.dragDetails != null) {
-                _autoAdvanceTimer?.cancel();
-              }
-              return false;
-            },
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: total,
-              onPageChanged: (index) {
-                _autoAdvanceTimer?.cancel();
-                setState(() {
-                  _currentPage = index;
-                });
-              },
-              itemBuilder: (context, index) {
-                final item = widget.category.items[index];
-                final currentCount = provider.getCount(item.id);
-                final isCompleted = provider.isCompleted(item);
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification is ScrollStartNotification &&
+            notification.dragDetails != null) {
+          _autoAdvanceTimer?.cancel();
+        }
+        return false;
+      },
+      child: PageView.builder(
+        controller: _pageController,
+        itemCount: total,
+        onPageChanged: (index) {
+          _autoAdvanceTimer?.cancel();
+          setState(() {
+            _currentPage = index;
+          });
+        },
+        itemBuilder: (context, index) {
+          final item = widget.category.items[index];
+          final currentCount = provider.getCount(item.id);
+          final isCompleted = provider.isCompleted(item);
 
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.only(bottom: 20, top: 4),
-                  child: ZikrCard(
-                    key: ValueKey(item.id),
-                    item: item,
-                    currentCount: currentCount,
-                    isCompleted: isCompleted,
-                    fontScale: provider.fontScale,
-                    onIncrement: () =>
-                        _handleSwipeIncrement(provider, item, index),
-                    onDecrement: () {
-                      _autoAdvanceTimer?.cancel();
-                      provider.decrement(item);
-                    },
-                    onReset: () {
-                      _autoAdvanceTimer?.cancel();
-                      provider.resetZikr(item.id);
-                    },
-                  ),
-                );
-              },
+          return SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 24, top: 4),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ZikrCard(
+                  key: ValueKey(item.id),
+                  item: item,
+                  currentCount: currentCount,
+                  isCompleted: isCompleted,
+                  fontScale: provider.fontScale,
+                  onIncrement: () =>
+                      _handleSwipeIncrement(provider, item, index),
+                  onDecrement: () {
+                    _autoAdvanceTimer?.cancel();
+                    provider.decrement(item);
+                  },
+                  onReset: () {
+                    _autoAdvanceTimer?.cancel();
+                    provider.resetZikr(item.id);
+                  },
+                  isCarouselMode: true,
+                ),
+                const SizedBox(height: 8),
+                _buildCarouselControlRow(
+                  provider: provider,
+                  item: item,
+                  currentCount: currentCount,
+                  isCompleted: isCompleted,
+                  index: index,
+                  total: total,
+                  colors: colors,
+                ),
+              ],
             ),
-          ),
-        ),
-
-        // Docked bottom controls: thumb-friendly stepper and navigation arrows
-        _buildBottomNavigationControls(provider, total, colors),
-      ],
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildBottomNavigationControls(
-      AzkarProvider provider, int total, AppThemeColors colors) {
-    final bottomInset = MediaQuery.of(context).viewPadding.bottom;
-    final isNextEnabled = _currentPage < total - 1;
-    final isPrevEnabled = _currentPage > 0;
+  Widget _buildCarouselControlRow({
+    required AzkarProvider provider,
+    required ZikrItem item,
+    required int currentCount,
+    required bool isCompleted,
+    required int index,
+    required int total,
+    required AppThemeColors colors,
+  }) {
+    final isNextEnabled = index < total - 1;
+    final isPrevEnabled = index > 0;
 
-    return Container(
-      padding: EdgeInsets.fromLTRB(16, 10, 16, 10 + bottomInset),
-      decoration: BoxDecoration(
-        color: colors.cardSurface,
-        border: Border(
-          top: BorderSide(color: colors.hairline),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: colors.shadowColor,
-            blurRadius: 10,
-            offset: const Offset(0, -3),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         textDirection: TextDirection.ltr,
@@ -576,38 +613,17 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 : null,
           ),
 
-          const SizedBox(width: 12),
+          const SizedBox(width: 18),
 
-          // Stepper indicator pill at bottom center
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: colors.badgeGoldBg,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: colors.badgeGoldBorder),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.auto_stories_rounded,
-                  size: 15,
-                  color: colors.metallicGold,
-                ),
-                const SizedBox(width: 7),
-                Text(
-                  'الذكر ${_currentPage + 1} من $total',
-                  style: TextStyle(
-                    color: colors.metallicGold,
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
+          // Circular green counter button
+          CircularCounterButton(
+            currentCount: currentCount,
+            repeatCount: item.repeatCount,
+            isCompleted: isCompleted,
+            onTap: () => _handleSwipeIncrement(provider, item, index),
           ),
 
-          const SizedBox(width: 12),
+          const SizedBox(width: 18),
 
           // Previous arrow (returns to previous zikr toward right in RTL)
           _buildNavArrowButton(
@@ -644,13 +660,22 @@ class _CategoryScreenState extends State<CategoryScreen> {
       decoration: BoxDecoration(
         color: isEnabled
             ? colors.surface
-            : colors.surface.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(10),
+            : colors.surface.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isEnabled
               ? colors.hairline
-              : colors.hairline.withValues(alpha: 0.4),
+              : colors.hairline.withValues(alpha: 0.35),
         ),
+        boxShadow: isEnabled
+            ? [
+                BoxShadow(
+                  color: colors.shadowColor.withValues(alpha: 0.25),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: IconButton(
         icon: Icon(icon, size: 18),
@@ -664,8 +689,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
         ),
         color: isEnabled
             ? colors.textPrimary
-            : colors.textTertiary.withValues(alpha: 0.4),
-        disabledColor: colors.textTertiary.withValues(alpha: 0.4),
+            : colors.textTertiary.withValues(alpha: 0.35),
+        disabledColor: colors.textTertiary.withValues(alpha: 0.35),
         onPressed: onPressed,
       ),
     );
