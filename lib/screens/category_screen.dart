@@ -559,7 +559,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   },
                   isCarouselMode: true,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 _buildCarouselControlRow(
                   provider: provider,
                   item: item,
@@ -590,7 +590,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     final isPrevEnabled = index > 0;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.only(top: 2, bottom: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         textDirection: TextDirection.ltr,
@@ -654,23 +654,27 @@ class _CategoryScreenState extends State<CategoryScreen> {
     required AppThemeColors colors,
     required VoidCallback? onPressed,
   }) {
+    final iconColor = isEnabled
+        ? colors.accentGreen
+        : colors.textTertiary.withValues(alpha: 0.35);
+
     return Container(
       width: 40,
       height: 40,
       decoration: BoxDecoration(
         color: isEnabled
-            ? colors.surface
+            ? colors.badgeGreenBg
             : colors.surface.withValues(alpha: 0.35),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isEnabled
-              ? colors.hairline
+              ? colors.badgeGreenBorder
               : colors.hairline.withValues(alpha: 0.35),
         ),
         boxShadow: isEnabled
             ? [
                 BoxShadow(
-                  color: colors.shadowColor.withValues(alpha: 0.25),
+                  color: colors.greenGlow.withValues(alpha: 0.25),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -678,7 +682,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
             : null,
       ),
       child: IconButton(
-        icon: Icon(icon, size: 18),
+        icon: Icon(icon, size: 18, color: iconColor),
         tooltip: tooltip,
         padding: EdgeInsets.zero,
         constraints: const BoxConstraints(
@@ -687,9 +691,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
           maxWidth: 40,
           maxHeight: 40,
         ),
-        color: isEnabled
-            ? colors.textPrimary
-            : colors.textTertiary.withValues(alpha: 0.35),
+        color: iconColor,
         disabledColor: colors.textTertiary.withValues(alpha: 0.35),
         onPressed: onPressed,
       ),

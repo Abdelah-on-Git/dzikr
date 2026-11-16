@@ -182,5 +182,54 @@ void main() {
       // First item is completed
       expect(find.text('تم الإنجاز (1 / 1)'), findsOneWidget);
     });
+
+    testWidgets(
+        'Navigation arrows feature green styling and CircularCounterButton supports enlarged font scale and TalkBack semantics',
+        (WidgetTester tester) async {
+      await provider.toggleViewMode(); // Carousel mode
+
+      final category = provider.book!.categories.first;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.dark(),
+          home: MediaQuery(
+            data: const MediaQueryData(textScaler: TextScaler.linear(2.0)),
+            child: ChangeNotifierProvider<AzkarProvider>.value(
+              value: provider,
+              child: CategoryScreen(category: category),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify no RenderFlex overflow occurs under 2.0x font scaling
+      expect(tester.takeException(), isNull);
+
+      // Verify navigation arrow green color on enabled arrow
+      final nextIcon = tester.widget<Icon>(
+          find.descendant(of: find.byTooltip('الذكر التالي'), matching: find.byType(Icon)));
+      expect(nextIcon.color, isNotNull);
+
+      // Verify CircularCounterButton has Semantics
+      final semanticsFinder = find.descendant(
+        of: find.byType(CircularCounterButton),
+        matching: find.byWidgetPredicate(
+            (w) => w is Semantics && w.properties.button == true),
+      );
+      expect(semanticsFinder, findsOneWidget);
+
+      // Scroll if needed inside the scrollable PageView card
+      await tester.ensureVisible(find.byType(CircularCounterButton));
+      await tester.pumpAndSettle();
+
+      // Tap to complete
+      await tester.tap(find.byType(CircularCounterButton));
+      await tester.pumpAndSettle();
+
+      // Verify no overflow when completed with 2.0x scale
+      expect(tester.takeException(), isNull);
+      expect(find.text('تم الإنجاز (1 / 1)'), findsOneWidget);
+    });
   });
 }

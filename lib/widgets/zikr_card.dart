@@ -51,7 +51,10 @@ class ZikrCard extends StatelessWidget {
         : 0.0;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: isCarouselMode ? 4 : 8,
+      ),
       decoration: BoxDecoration(
         color: colors.cardSurface,
         borderRadius: BorderRadius.circular(20),

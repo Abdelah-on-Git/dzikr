@@ -53,16 +53,19 @@ class _CircularCounterButtonState extends State<CircularCounterButton>
 
   void _onTapUp(TapUpDetails _) {
     _pressController.reverse();
+  }
+
+  void _onTapCancel() {
+    _pressController.reverse();
+  }
+
+  void _handleTap() {
     if (widget.isCompleted) {
       HapticFeedback.lightImpact();
     } else {
       HapticFeedback.mediumImpact();
     }
     widget.onTap();
-  }
-
-  void _onTapCancel() {
-    _pressController.reverse();
   }
 
   @override
@@ -72,85 +75,102 @@ class _CircularCounterButtonState extends State<CircularCounterButton>
         ? '${widget.currentCount} / ${widget.repeatCount}'
         : '${widget.currentCount}';
 
-    return ScaleTransition(
-      scale: _scaleAnimation,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTapDown: _onTapDown,
-        onTapUp: _onTapUp,
-        onTapCancel: _onTapCancel,
-        child: Container(
-          width: widget.size,
-          height: widget.size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: widget.isCompleted
-                ? (colors.isDark ? const Color(0xFF132A17) : const Color(0xFF2E7D32))
-                : colors.accentGreen,
-            border: Border.all(
+    return Semantics(
+      button: true,
+      enabled: true,
+      label: widget.isCompleted
+          ? 'العداد مكتمل، ${widget.currentCount} من ${widget.repeatCount}'
+          : 'العداد، ${widget.currentCount} من ${widget.repeatCount}',
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: _onTapDown,
+          onTapUp: _onTapUp,
+          onTapCancel: _onTapCancel,
+          onTap: _handleTap,
+          child: Container(
+            width: widget.size,
+            height: widget.size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
               color: widget.isCompleted
-                  ? colors.metallicGold
-                  : Colors.white.withValues(alpha: 0.28),
-              width: widget.isCompleted ? 2.0 : 1.5,
-            ),
-            boxShadow: widget.isCompleted
-                ? [
-                    BoxShadow(
-                      color: colors.metallicGold.withValues(alpha: 0.35),
-                      blurRadius: 16,
-                      spreadRadius: 1,
-                      offset: const Offset(0, 3),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: colors.greenGlow.withValues(alpha: 0.45),
-                      blurRadius: 18,
-                      spreadRadius: 1,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-          ),
-          child: Center(
-            child: widget.isCompleted
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.check_circle_rounded,
-                        size: 15,
-                        color: colors.metallicGold,
+                  ? (colors.isDark ? const Color(0xFF132A17) : const Color(0xFF2E7D32))
+                  : colors.accentGreen,
+              border: Border.all(
+                color: widget.isCompleted
+                    ? colors.metallicGold
+                    : Colors.white.withValues(alpha: 0.28),
+                width: widget.isCompleted ? 2.0 : 1.5,
+              ),
+              boxShadow: widget.isCompleted
+                  ? [
+                      BoxShadow(
+                        color: colors.metallicGold.withValues(alpha: 0.35),
+                        blurRadius: 16,
+                        spreadRadius: 1,
+                        offset: const Offset(0, 3),
                       ),
-                      const SizedBox(height: 2),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                    ]
+                  : [
+                      BoxShadow(
+                        color: colors.greenGlow.withValues(alpha: 0.45),
+                        blurRadius: 18,
+                        spreadRadius: 1,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+            ),
+            child: Center(
+              child: widget.isCompleted
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_circle_rounded,
+                          size: 15,
+                          color: colors.metallicGold,
+                        ),
+                        const SizedBox(height: 2),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              'تم الإنجاز (${widget.currentCount} / ${widget.repeatCount})',
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              style: TextStyle(
+                                color: colors.metallicGold,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 9.5,
+                                height: 1.1,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
                         child: Text(
-                          'تم الإنجاز (${widget.currentCount} / ${widget.repeatCount})',
+                          countLabel,
                           textAlign: TextAlign.center,
-                          maxLines: 2,
                           style: TextStyle(
-                            color: colors.metallicGold,
+                            color: colors.isDark
+                                ? AppColors.pitchBlack
+                                : Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 9.5,
-                            height: 1.1,
+                            fontSize: 16.5,
+                            letterSpacing: 0.2,
                           ),
                         ),
                       ),
-                    ],
-                  )
-                : Text(
-                    countLabel,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: colors.isDark
-                          ? AppColors.pitchBlack
-                          : Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16.5,
-                      letterSpacing: 0.2,
                     ),
-                  ),
+            ),
           ),
         ),
       ),
