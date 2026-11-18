@@ -5,6 +5,7 @@ import 'app_colors.dart';
 class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
+      fontFamily: 'Amiri',
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.lightScaffoldBg,
       primaryColor: AppColors.lightEmeraldGreen,
@@ -87,7 +88,7 @@ class AppTheme {
           color: AppColors.lightTextPrimary,
           fontSize: 19,
           fontWeight: FontWeight.w400,
-          height: 1.85, // Generous line height for Arabic tashkeel
+          height: 1.95, // Tuned line height for Arabic tashkeel to prevent collision
           letterSpacing: 0.2,
         ),
         bodyMedium: TextStyle(
@@ -106,6 +107,7 @@ class AppTheme {
 
   static ThemeData get darkTheme {
     return ThemeData(
+      fontFamily: 'Amiri',
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.pitchBlack,
       primaryColor: AppColors.pitchGreen,
@@ -188,7 +190,7 @@ class AppTheme {
           color: AppColors.textPrimary,
           fontSize: 19,
           fontWeight: FontWeight.w400,
-          height: 1.85, // Generous line height for Arabic tashkeel
+          height: 1.95, // Tuned line height for Arabic tashkeel to prevent collision
           letterSpacing: 0.2,
         ),
         bodyMedium: TextStyle(

@@ -231,9 +231,10 @@ class ZikrCard extends StatelessWidget {
                 item.text,
                 textAlign: TextAlign.right,
                 style: TextStyle(
+                  fontFamily: 'Amiri',
                   color: colors.textPrimary,
                   fontSize: 19 * fontScale,
-                  height: 1.85,
+                  height: 1.95,
                   fontWeight: FontWeight.w400,
                   letterSpacing: 0.1,
                 ),
