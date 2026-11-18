@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -141,6 +142,10 @@ void main() {
     expect(AppColors.lightSurface, const Color(0xFFFBF9F5));
     expect(AppColors.lightCardSurface, const Color(0xFFFBF9F5));
     expect(AppTheme.lightTheme.cardTheme.color, const Color(0xFFFBF9F5));
+    expect(AppTheme.darkTheme.textTheme.bodyLarge?.fontFamily, 'Amiri');
+    expect(AppTheme.darkTheme.textTheme.bodyLarge?.height, 1.95);
+    expect(AppTheme.lightTheme.textTheme.bodyLarge?.fontFamily, 'Amiri');
+    expect(AppTheme.lightTheme.textTheme.bodyLarge?.height, 1.95);
   });
 
   testWidgets(
@@ -310,5 +315,73 @@ void main() {
           widget is CustomPaint && widget.painter is IslamicCornerPainter),
       findsOneWidget,
     );
+  });
+
+  test('IslamicCornerPainter boundary and shouldRepaint tests', () {
+    const painter1 = IslamicCornerPainter();
+    const painter2 = IslamicCornerPainter();
+    const painter3 = IslamicCornerPainter(color: Color(0xFF000000));
+    const painter4 = IslamicCornerPainter(cornerSize: 24.0);
+    const painter5 = IslamicCornerPainter(margin: 15.0);
+
+    expect(painter1.shouldRepaint(painter2), false);
+    expect(painter1.shouldRepaint(painter3), true);
+    expect(painter1.shouldRepaint(painter4), true);
+    expect(painter1.shouldRepaint(painter5), true);
+  });
+
+  testWidgets('Offline Amiri font files are present and loadable from assets',
+      (WidgetTester tester) async {
+    final regularData = await rootBundle.load('assets/fonts/Amiri-Regular.ttf');
+    expect(regularData.lengthInBytes, greaterThan(400000));
+
+    final boldData = await rootBundle.load('assets/fonts/Amiri-Bold.ttf');
+    expect(boldData.lengthInBytes, greaterThan(400000));
+  });
+
+  testWidgets('ZikrCard renders cleanly on narrow screen with 2.0x text scaling',
+      (WidgetTester tester) async {
+    final item = ZikrItem(
+      id: 2,
+      text:
+          'أَصْبَحْنَا وَأَصْبَحَ المُلْكُ لِلَّهِ، وَالحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ المُلْكُ وَلَهُ الحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذَا اليَوْمِ وَخَيْرَ مَا بَعْدَهُ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَذَا اليَوْمِ وَشَرِّ مَا بَعْدَهُ',
+      repeatText: 'مَرَّةً وَاحِدَةً',
+      repeatCount: 1,
+      note: 'مِنْ قَالَهَا مَرَّةً وَاحِدَةً كَفَتْهُ',
+    );
+
+    tester.view.physicalSize = const Size(320 * 3, 640 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: MediaQuery(
+          data: const MediaQueryData(
+            textScaler: TextScaler.linear(2.0),
+          ),
+          child: Scaffold(
+            body: SingleChildScrollView(
+              child: ZikrCard(
+                item: item,
+                currentCount: 0,
+                isCompleted: false,
+                fontScale: 1.0,
+                onIncrement: () {},
+                onDecrement: () {},
+                onReset: () {},
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byType(ZikrCard), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

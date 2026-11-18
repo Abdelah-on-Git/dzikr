@@ -96,32 +96,37 @@ class ZikrCard extends StatelessWidget {
             child: Row(
               children: [
                 // Repetition Badge (Islamic Gold accent)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: colors.badgeGoldBg,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: colors.badgeGoldBorder),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.repeat_rounded,
-                        size: 14,
-                        color: colors.metallicGold,
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: colors.badgeGoldBg,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: colors.badgeGoldBorder),
                       ),
-                      const SizedBox(width: 5),
-                      Text(
-                        item.repeatText,
-                        style: TextStyle(
-                          color: colors.metallicGold,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.repeat_rounded,
+                            size: 14,
+                            color: colors.metallicGold,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            item.repeatText,
+                            style: TextStyle(
+                              color: colors.metallicGold,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
