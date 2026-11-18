@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../models/zikr_item.dart';
 import '../theme/app_colors.dart';
 import 'circular_counter_button.dart';
+import 'islamic_corner_painter.dart';
 
 class ZikrCard extends StatelessWidget {
   final ZikrItem item;
@@ -80,9 +81,15 @@ class ZikrCard extends StatelessWidget {
                 ),
               ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: CustomPaint(
+          painter: IslamicCornerPainter(
+            color: colors.metallicGold.withValues(alpha: 0.20),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
           // Header info: Repeat text pill + Circular progress ring + Decrement/Reset actions + Copy
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
@@ -297,6 +304,8 @@ class ZikrCard extends StatelessWidget {
           ],
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 }

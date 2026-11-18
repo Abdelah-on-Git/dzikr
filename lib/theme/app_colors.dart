@@ -38,8 +38,8 @@ class AppColors {
 
   // Light / Day Palette tokens
   static const Color lightScaffoldBg = Color(0xFFF8F9FA); // Warm off-white
-  static const Color lightSurface = Color(0xFFF1F3F5);
-  static const Color lightCardSurface = Color(0xFFFFFFFF);
+  static const Color lightSurface = Color(0xFFFBF9F5); // Warm manuscript parchment tint
+  static const Color lightCardSurface = Color(0xFFFBF9F5); // Warm manuscript parchment tint (replaces pure sterile white #FFFFFF)
   static const Color lightElevatedSurface = Color(0xFFE9ECEF);
   static const Color lightHairline = Color(0x14000000);
   static const Color lightBorderNeutral = Color(0xFFE5E7EB);

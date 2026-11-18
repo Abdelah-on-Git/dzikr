@@ -8,7 +8,10 @@ import 'package:al_khulasah_al_hasna/screens/category_screen.dart';
 import 'package:al_khulasah_al_hasna/services/storage_service.dart';
 import 'package:al_khulasah_al_hasna/theme/app_colors.dart';
 import 'package:al_khulasah_al_hasna/theme/app_theme.dart';
+import 'package:al_khulasah_al_hasna/models/zikr_item.dart';
 import 'package:al_khulasah_al_hasna/widgets/about_sheet.dart';
+import 'package:al_khulasah_al_hasna/widgets/islamic_corner_painter.dart';
+import 'package:al_khulasah_al_hasna/widgets/zikr_card.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -135,6 +138,9 @@ void main() {
     expect(AppTheme.lightTheme.scaffoldBackgroundColor, const Color(0xFFF8F9FA));
     expect(AppTheme.lightTheme.colorScheme.primary, const Color(0xFF1B5E20));
     expect(AppTheme.lightTheme.colorScheme.tertiary, AppColors.metallicGold);
+    expect(AppColors.lightSurface, const Color(0xFFFBF9F5));
+    expect(AppColors.lightCardSurface, const Color(0xFFFBF9F5));
+    expect(AppTheme.lightTheme.cardTheme.color, const Color(0xFFFBF9F5));
   });
 
   testWidgets(
@@ -272,5 +278,37 @@ void main() {
 
     // Ensure no overflow errors occurred
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('ZikrCard renders subtle Islamic corner ornaments painter',
+      (WidgetTester tester) async {
+    final item = ZikrItem(
+      id: 1,
+      text: 'سبحان الله وبحمده',
+      repeatText: 'مرة واحدة',
+      repeatCount: 1,
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ZikrCard(
+            item: item,
+            currentCount: 0,
+            isCompleted: false,
+            fontScale: 1.0,
+            onIncrement: () {},
+            onDecrement: () {},
+            onReset: () {},
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.byWidgetPredicate((widget) =>
+          widget is CustomPaint && widget.painter is IslamicCornerPainter),
+      findsOneWidget,
+    );
   });
 }
