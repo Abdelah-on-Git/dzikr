@@ -58,8 +58,18 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
   void _triggerAutoAdvance(int index) {
     final total = widget.category.items.length;
-    // Condition 1: If on the last card, do not attempt to swipe past the end.
-    if (index >= total - 1) return;
+    final provider = Provider.of<AzkarProvider>(context, listen: false);
+    final firstIncomplete = provider.getFirstIncompleteIndex(widget.category);
+
+    int targetPage;
+    if (index < total - 1) {
+      targetPage = index + 1;
+    } else if (firstIncomplete != null && firstIncomplete < index) {
+      // Loop back to first incomplete item when finishing the last card
+      targetPage = firstIncomplete;
+    } else {
+      return;
+    }
 
     _autoAdvanceTimer?.cancel();
     _autoAdvanceTimer = Timer(const Duration(milliseconds: 300), () {
@@ -67,21 +77,27 @@ class _CategoryScreenState extends State<CategoryScreen> {
       if (!_pageController.hasClients) return;
       // Ensure the user is still on this card and hasn't manually swiped away
       if (_currentPage != index) return;
-      if (_currentPage >= total - 1) return;
 
-      final provider = Provider.of<AzkarProvider>(context, listen: false);
-      if (!provider.isSwipeMode) return;
+      final p = Provider.of<AzkarProvider>(context, listen: false);
+      if (!p.isSwipeMode) return;
       // Ensure the item is still completed (not reset or decremented during delay)
-      if (provider.getCount(widget.category.items[index].id) <
+      if (p.getCount(widget.category.items[index].id) <
           widget.category.items[index].repeatCount) {
         return;
       }
 
+      final currentFirstIncomplete = p.getFirstIncompleteIndex(widget.category);
+      final finalTarget = (index >= total - 1)
+          ? currentFirstIncomplete
+          : targetPage;
+
+      if (finalTarget == null || finalTarget == index) return;
+
       // Subtle haptic confirmation when auto-advancing
       HapticFeedback.lightImpact();
       _pageController.animateToPage(
-        index + 1,
-        duration: const Duration(milliseconds: 260),
+        finalTarget,
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     });
@@ -535,6 +551,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
           final item = widget.category.items[index];
           final currentCount = provider.getCount(item.id);
           final isCompleted = provider.isCompleted(item);
+          final firstIncompleteIndex =
+              provider.getFirstIncompleteIndex(widget.category);
+          final showCatchUp =
+              firstIncompleteIndex != null && firstIncompleteIndex < index;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.only(bottom: 24, top: 4),
@@ -569,6 +589,16 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   total: total,
                   colors: colors,
                 ),
+                if (showCatchUp) ...[
+                  const SizedBox(height: 8),
+                  _buildCatchUpButton(
+                    context: context,
+                    colors: colors,
+                    targetIndex: firstIncompleteIndex,
+                    remainingCount:
+                        provider.getRemainingIncompleteCount(widget.category),
+                  ),
+                ],
               ],
             ),
           );
@@ -694,6 +724,70 @@ class _CategoryScreenState extends State<CategoryScreen> {
         color: iconColor,
         disabledColor: colors.textTertiary.withValues(alpha: 0.35),
         onPressed: onPressed,
+      ),
+    );
+  }
+
+  Widget _buildCatchUpButton({
+    required BuildContext context,
+    required AppThemeColors colors,
+    required int targetIndex,
+    required int remainingCount,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            _autoAdvanceTimer?.cancel();
+            HapticFeedback.selectionClick();
+            _pageController.animateToPage(
+              targetIndex,
+              duration: const Duration(milliseconds: 320),
+              curve: Curves.easeInOut,
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+            decoration: BoxDecoration(
+              color: colors.badgeGoldBg,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: colors.badgeGoldBorder, width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: colors.metallicGoldGlow,
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.replay_rounded,
+                  size: 18,
+                  color: colors.accentGreen,
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    '«العودة للأذكار غير المكتملة (متبقٍ $remainingCount) ↩»',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: colors.metallicGold,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

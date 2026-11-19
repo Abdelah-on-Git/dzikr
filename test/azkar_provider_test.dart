@@ -170,5 +170,43 @@ void main() {
     await provider.increment(item5);
     expect(hapticCalls.last, 'HapticFeedbackType.heavyImpact');
   });
+
+  test('getFirstIncompleteIndex and getRemainingIncompleteCount calculate correctly', () async {
+    final morning = provider.book!.categories.first;
+    await provider.resetCategory(morning);
+
+    expect(provider.getFirstIncompleteIndex(morning), 0);
+    expect(provider.getRemainingIncompleteCount(morning), morning.items.length);
+
+    // Complete item 0
+    await provider.increment(morning.items[0]);
+    expect(provider.isCompleted(morning.items[0]), true);
+
+    // Now first incomplete should be index 1
+    expect(provider.getFirstIncompleteIndex(morning), 1);
+    expect(provider.getRemainingIncompleteCount(morning), morning.items.length - 1);
+
+    // Skip item 1, complete all other items
+    for (int i = 2; i < morning.items.length; i++) {
+      final item = morning.items[i];
+      for (int count = 0; count < item.repeatCount; count++) {
+        await provider.increment(item);
+      }
+    }
+
+    // Item 1 is still incomplete, all others are complete
+    expect(provider.getFirstIncompleteIndex(morning), 1);
+    expect(provider.getRemainingIncompleteCount(morning), 1);
+
+    // Complete item 1 as well
+    final item1 = morning.items[1];
+    for (int count = 0; count < item1.repeatCount; count++) {
+      await provider.increment(item1);
+    }
+
+    // All items completed
+    expect(provider.getFirstIncompleteIndex(morning), isNull);
+    expect(provider.getRemainingIncompleteCount(morning), 0);
+  });
 }
 

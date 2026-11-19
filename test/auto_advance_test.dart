@@ -489,5 +489,110 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('الذكر 1 من 3'), findsOneWidget);
     });
+
+    testWidgets(
+        'Catch-up button appears when earlier item was skipped and tapping navigates back',
+        (WidgetTester tester) async {
+      await provider.toggleViewMode();
+      final category = AzkarCategory(
+        categoryId: 'test_catchup_btn',
+        categoryName: 'تجربة الاستدراك',
+        timeWindow: 'وقت',
+        items: [
+          provider.book!.categories.first.items[0],
+          provider.book!.categories.first.items[1],
+          provider.book!.categories.first.items[2],
+        ],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ChangeNotifierProvider<AzkarProvider>.value(
+            value: provider,
+            child: CategoryScreen(category: category),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // On card 1, no catch-up button
+      expect(find.textContaining('العودة للأذكار غير المكتملة'), findsNothing);
+
+      // Skip card 1 by tapping next arrow to go to card 2
+      final nextBtn = find.byTooltip('الذكر التالي');
+      await tester.tap(nextBtn);
+      await tester.pumpAndSettle();
+
+      // Now on card 2 (index 1), earlier card 0 is incomplete!
+      expect(find.textContaining('الذكر 2 من 3'), findsOneWidget);
+      expect(
+          find.textContaining('«العودة للأذكار غير المكتملة (متبقٍ 3) ↩»'),
+          findsOneWidget);
+
+      // Tap next button again to move to card 3 (index 2, last card)
+      await tester.tap(nextBtn);
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('الذكر 3 من 3'), findsOneWidget);
+      expect(
+          find.textContaining('«العودة للأذكار غير المكتملة (متبقٍ 3) ↩»'),
+          findsOneWidget);
+
+      // Tap catch-up button: should navigate back to first incomplete item (card 1 / index 0)
+      final catchUpBtn = find.textContaining('العودة للأذكار غير المكتملة');
+      await tester.ensureVisible(catchUpBtn);
+      await tester.tap(catchUpBtn);
+      await tester.pumpAndSettle();
+
+      // Should be back on card 1!
+      expect(find.textContaining('الذكر 1 من 3'), findsOneWidget);
+    });
+
+    testWidgets(
+        'Completing the last card when earlier items were skipped loops back to first incomplete item',
+        (WidgetTester tester) async {
+      await provider.toggleViewMode();
+      final category = AzkarCategory(
+        categoryId: 'test_loopback',
+        categoryName: 'تجربة الالتفاف للأذكار المتبقية',
+        timeWindow: 'وقت',
+        items: [
+          provider.book!.categories.first.items[0],
+          provider.book!.categories.first.items[1],
+        ],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ChangeNotifierProvider<AzkarProvider>.value(
+            value: provider,
+            child: CategoryScreen(category: category),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // On card 1: skip it by tapping next
+      final nextBtn = find.byTooltip('الذكر التالي');
+      await tester.tap(nextBtn);
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('الذكر 2 من 2'), findsOneWidget);
+
+      // Complete card 2 (the last card)
+      final counterFinder = find.text('0 / 1');
+      await tester.tap(counterFinder);
+      await tester.pump();
+
+      // Still on card 2 immediately
+      expect(find.textContaining('الذكر 2 من 2'), findsOneWidget);
+
+      // Wait 300ms for auto-advance timer
+      await tester.pump(const Duration(milliseconds: 320));
+      await tester.pumpAndSettle();
+
+      // Should have looped back to card 1 (the first incomplete item)!
+      expect(find.textContaining('الذكر 1 من 2'), findsOneWidget);
+    });
   });
 }

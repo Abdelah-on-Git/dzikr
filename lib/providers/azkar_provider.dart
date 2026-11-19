@@ -138,6 +138,19 @@ class AzkarProvider extends ChangeNotifier {
     return category.items.where((i) => isCompleted(i)).length;
   }
 
+  int? getFirstIncompleteIndex(AzkarCategory category) {
+    for (int i = 0; i < category.items.length; i++) {
+      if (!isCompleted(category.items[i])) {
+        return i;
+      }
+    }
+    return null;
+  }
+
+  int getRemainingIncompleteCount(AzkarCategory category) {
+    return category.items.length - getCompletedCount(category);
+  }
+
   double getCategoryProgress(AzkarCategory category) {
     if (category.items.isEmpty) return 0.0;
     final completed = getCompletedCount(category);
