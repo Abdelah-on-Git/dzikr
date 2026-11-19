@@ -59,17 +59,24 @@ class _CategoryScreenState extends State<CategoryScreen> {
   void _triggerAutoAdvance(int index) {
     final total = widget.category.items.length;
     final provider = Provider.of<AzkarProvider>(context, listen: false);
-    final firstIncomplete = provider.getFirstIncompleteIndex(widget.category);
 
-    int targetPage;
-    if (index < total - 1) {
-      targetPage = index + 1;
-    } else if (firstIncomplete != null && firstIncomplete < index) {
-      // Loop back to first incomplete item when finishing the last card
-      targetPage = firstIncomplete;
-    } else {
-      return;
+    // If all azkar in the category are completed, stop auto-advance
+    final firstIncomplete = provider.getFirstIncompleteIndex(widget.category);
+    if (firstIncomplete == null) return;
+
+    // Find the next incomplete item after the current index
+    int? targetPage;
+    for (int i = index + 1; i < total; i++) {
+      if (!provider.isCompleted(widget.category.items[i])) {
+        targetPage = i;
+        break;
+      }
     }
+
+    // If no subsequent items are incomplete, loop back to the first incomplete item before index
+    targetPage ??= (firstIncomplete < index) ? firstIncomplete : null;
+
+    if (targetPage == null || targetPage == index) return;
 
     _autoAdvanceTimer?.cancel();
     _autoAdvanceTimer = Timer(const Duration(milliseconds: 300), () {
@@ -87,9 +94,18 @@ class _CategoryScreenState extends State<CategoryScreen> {
       }
 
       final currentFirstIncomplete = p.getFirstIncompleteIndex(widget.category);
-      final finalTarget = (index >= total - 1)
+      if (currentFirstIncomplete == null) return;
+
+      int? finalTarget;
+      for (int i = index + 1; i < total; i++) {
+        if (!p.isCompleted(widget.category.items[i])) {
+          finalTarget = i;
+          break;
+        }
+      }
+      finalTarget ??= (currentFirstIncomplete < index)
           ? currentFirstIncomplete
-          : targetPage;
+          : null;
 
       if (finalTarget == null || finalTarget == index) return;
 

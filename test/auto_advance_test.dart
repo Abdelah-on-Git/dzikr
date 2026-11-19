@@ -593,6 +593,97 @@ void main() {
 
       // Should have looped back to card 1 (the first incomplete item)!
       expect(find.textContaining('الذكر 1 من 2'), findsOneWidget);
+
+      // Now complete card 1 (category becomes 100% completed)
+      final card1Counter = find.text('0 / 1');
+      await tester.tap(card1Counter);
+      await tester.pump();
+
+      // Wait 320ms: auto-advance must NOT advance to card 2 because all azkar are completed
+      await tester.pump(const Duration(milliseconds: 320));
+      await tester.pumpAndSettle();
+
+      // Remains on card 1
+      expect(find.textContaining('الذكر 1 من 2'), findsOneWidget);
+    });
+
+    testWidgets(
+        'Auto-advance after looping back jumps directly to next incomplete item bypassing completed items',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await provider.toggleViewMode();
+      final category = AzkarCategory(
+        categoryId: 'test_skip_non_contiguous',
+        categoryName: 'تجربة التخطي غير المتتالي',
+        timeWindow: 'وقت',
+        items: [
+          provider.book!.categories.first.items[0],
+          provider.book!.categories.first.items[1],
+          provider.book!.categories.first.items[2],
+          provider.book!.categories.first.items[3],
+        ],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ChangeNotifierProvider<AzkarProvider>.value(
+            value: provider,
+            child: CategoryScreen(category: category),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final nextBtn = find.byTooltip('الذكر التالي');
+
+      // Card 1 (index 0): skip
+      await tester.ensureVisible(nextBtn);
+      await tester.tap(nextBtn);
+      await tester.pumpAndSettle();
+
+      // Card 2 (index 1): complete it
+      final c2Counter = find.text('0 / 1');
+      await tester.ensureVisible(c2Counter);
+      await tester.tap(c2Counter);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 320));
+      await tester.pumpAndSettle();
+
+      // Now on Card 3 (index 2): skip it
+      expect(find.textContaining('الذكر 3 من 4'), findsOneWidget);
+      await tester.ensureVisible(nextBtn);
+      await tester.tap(nextBtn);
+      await tester.pumpAndSettle();
+
+      // Now on Card 4 (index 3, last card): complete it
+      expect(find.textContaining('الذكر 4 من 4'), findsOneWidget);
+      final c4Counter = find.text('0 / 1');
+      await tester.ensureVisible(c4Counter);
+      await tester.tap(c4Counter);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 320));
+      await tester.pumpAndSettle();
+
+      // Card 4 was the last card; earlier incomplete items exist (0 and 2).
+      // Should loop back to first incomplete item: Card 1 (index 0)
+      expect(find.textContaining('الذكر 1 من 4'), findsOneWidget);
+
+      // Complete Card 1 (index 0):
+      // Next item (Card 2 / index 1) is ALREADY completed!
+      // Incomplete item remaining is Card 3 (index 2)!
+      final c1Counter = find.text('0 / 1');
+      await tester.ensureVisible(c1Counter);
+      await tester.tap(c1Counter);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 320));
+      await tester.pumpAndSettle();
+
+      // Should auto-advance directly to Card 3 (index 2), bypassing already completed Card 2!
+      expect(find.textContaining('الذكر 3 من 4'), findsOneWidget);
     });
   });
 }
