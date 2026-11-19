@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:al_khulasah_al_hasna/services/storage_service.dart';
@@ -128,6 +129,46 @@ void main() {
     await provider.toggleThemeMode();
     expect(provider.isDarkMode, true);
     expect(storage.getIsDarkMode(), true);
+  });
+
+  test('Haptic feedback: heavyImpact on completing multi-repetition azkar, mediumImpact for repeatCount == 1', () async {
+    final hapticCalls = <String?>[];
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (MethodCall methodCall) async {
+      if (methodCall.method == 'HapticFeedback.vibrate') {
+        hapticCalls.add(methodCall.arguments as String?);
+      }
+      return null;
+    });
+
+    final morning = provider.book!.categories.first;
+    // item 2 has repeatCount == 1 and initial count is 0
+    final item2 = morning.items.firstWhere((i) => i.id == 2);
+    expect(item2.repeatCount, 1);
+    expect(provider.getCount(2), 0);
+
+    // Increment item 2 to 1 (completes single-repetition item)
+    await provider.increment(item2);
+    expect(hapticCalls.last, 'HapticFeedbackType.mediumImpact');
+
+    // item 5 has repeatCount == 3 and initial count is 2 (from setUp)
+    final item5 = morning.items.firstWhere((i) => i.id == 5);
+    expect(item5.repeatCount, 3);
+    // Reset to test intermediate taps
+    await provider.resetZikr(5);
+    hapticCalls.clear();
+
+    // 0 -> 1 (interim tap)
+    await provider.increment(item5);
+    expect(hapticCalls.last, 'HapticFeedbackType.lightImpact');
+
+    // 1 -> 2 (interim tap)
+    await provider.increment(item5);
+    expect(hapticCalls.last, 'HapticFeedbackType.lightImpact');
+
+    // 2 -> 3 (completion of multi-repetition zikr)
+    await provider.increment(item5);
+    expect(hapticCalls.last, 'HapticFeedbackType.heavyImpact');
   });
 }
 

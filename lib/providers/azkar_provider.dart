@@ -86,7 +86,11 @@ class AzkarProvider extends ChangeNotifier {
 
     if (next == item.repeatCount) {
       // Milestone reached
-      HapticFeedback.mediumImpact();
+      if (item.repeatCount > 1) {
+        HapticFeedback.heavyImpact();
+      } else {
+        HapticFeedback.mediumImpact();
+      }
     } else {
       HapticFeedback.lightImpact();
     }
